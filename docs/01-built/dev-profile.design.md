@@ -66,7 +66,15 @@ Tiers are **suggested defaults** — any knob can be flipped regardless of tier.
   *signals to look for*, NOT a fixed formula:
   - placeholder/stub detection (TODO, empty handlers, `[1,2,3].map` skeletons →
     classify `partial`, not `done`).
-  - 3-way contract agreement (spec ↔ server ↔ client on shape/params) when an API exists.
+  - 3-way contract agreement (spec ↔ server ↔ client on shape/params) when an
+    interface surface exists — kept at full 3-way by the **contract-surface spec gate**
+    (dev-profile.md §7): under `profile: dev`, when the WorkList declares an interface
+    surface (REST route / client fetch / MCP tool / CLI flag / function signature) the
+    `api-spec` design-output is REQUIRED before `do` (default-ON gate, free-form knob
+    `contractSpecGate`). Absent spec → design FAIL (gate on) or logged 2-way degradation
+    (gate off) — never silent. Bootstrap friction reduced by auto-scaffolding an
+    api-spec STUB reverse-derived from code (human fills response shapes only).
+    Source: btw-001 (contract-surface diff QA lens), 2026-07.
   - "evidence must be real depth, not a file that exists" (anti-gaming).
   Multi-axis scoring (the 7 dimensions above) is the **dev-sprint default
   discipline — NOT opt-in** (opt-in gets ignored); WHICH axes apply adapts to the

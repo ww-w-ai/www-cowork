@@ -63,8 +63,13 @@ dev signals when classifying each item — they are *signals to look for*, NOT a
 score formula:
 - **Placeholder/stub detection** → classify `partial`, never `done`: TODO/FIXME
   markers, empty handlers, skeleton bodies (`[1,2,3].map`), hardcoded sample returns.
-- **3-way contract agreement** (when an API exists): spec ↔ server ↔ client must
-  agree on URL/method/params/shape. Disagreement → `divergent`.
+- **3-way contract agreement** (when an interface surface exists): spec ↔ server ↔
+  client must agree on URL/method/params/shape. Disagreement → `divergent`. Under
+  `profile: dev` the §7 contract-surface spec gate keeps a declared `api-spec` present,
+  so this runs at full **3-way**; if the spec is absent (gate knob-off) it degrades to
+  2-way (server↔client) and that degradation is **logged, never silent**. Surfaces
+  generalize beyond REST: MCP tool schema ↔ handler ↔ description, CLI flag ↔ parser ↔
+  docs, function signature ↔ callsites (see references/dev-profile.md §7).
 - **Anti-gaming**: evidence must be real depth, not "a file exists". Never mark
   `done` without verifying behavior; don't add comments/stubs to inflate the rate.
 - **code+test pairing** (default-on at standard+ tier): an implementation item with
@@ -84,7 +89,8 @@ discipline itself.
 Reference axis set (adapt to the work, don't hardcode blindly):
 - **Structural** — the scaffolding exists and is wired in (files/modules/routes present).
 - **Functional** — it actually performs the declared behavior, not a stub.
-- **Contract** — spec ↔ server ↔ client agree on shape/URL/params (when an interface exists).
+- **Contract** — spec ↔ server ↔ client agree on shape/URL/params (when an interface exists;
+  3-way when a declared spec is present per the dev-profile §7 gate, else 2-way + logged).
 - **Intent** — it serves the PRD-lite intent (WHY/SUCCESS), not just the literal instruction.
 - **Behavioral** — edge cases, error paths, and states are handled.
 - **UX** — interaction/feedback correctness (frontend only).

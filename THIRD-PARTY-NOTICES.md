@@ -68,3 +68,19 @@ limitations under the License.
 ```
 
 The full Apache-2.0 license text is available at the URL above.
+
+### Additional adaptation — measurable verification gates
+
+`skills/cowork-sprint/scripts/gates/gate-lib.mjs` is a **derivative work** of bkit's
+`lib/application/quality-gates/measure-router.js` (Apache-2.0). The gate-routing
+contract, the balanced-JSON extraction (`extractBalancedJson`), and the
+agent-output→numeric-value parse (`parseAgentOutput`) are adapted from it.
+
+Modifications from the original (Apache-2.0 §4 "stating changes"):
+- Deterministic gates (build/test/migration grep) execute directly in Node
+  rather than always routing to an agent.
+- Threshold resolution: project override > catalog default > fallback.
+- Gate catalog remapped from bkit's M1-M10/S1 to cowork lenses
+  (G-BUILD/G-CONTRACT/G-MATCH/G-CRIT/G-MIGRATE/G-INTENT/G-DOCSYNC).
+- Added an audit formatter and a standalone CLI (`cli.mjs`).
+- The bkit sprint FSM, phase enforcement, and Stop-hook are NOT included.

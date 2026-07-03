@@ -54,8 +54,9 @@ No separate presence gate; the anchor is just the PRD-lite step carried forward.
 ### 3.2 Gap-analysis dev lens (Tier S)
 Adds dev signals to the QA Axis-2 gap-analysis (references/gap-analysis.md § Dev
 lens): placeholder/stub detection (→ classify `partial`, not `done`), 3-way
-contract agreement (spec ↔ server ↔ client) when an API exists, "evidence must be
-real depth, not a file that exists" (anti-gaming). On top of these signals, a dev
+contract agreement (spec ↔ server ↔ client) when an interface surface exists — kept at
+full 3-way (not silently degraded to 2-way) by the §7 contract-surface spec gate,
+"evidence must be real depth, not a file that exists" (anti-gaming). On top of these signals, a dev
 sprint scores each item across the applicable **multi-axis reference** (Structural/
 Functional/Contract/Intent/Behavioral/UX/Runtime — gap-analysis.md § Multi-axis
 scoring): applying the multi-axis discipline is the dev default (NOT opt-in), while
@@ -185,14 +186,36 @@ bkit codifies a dev philosophy; cowork absorbs the *principles*, expressed cowor
   under dev a clean streak widens it, a failure narrows it. Default conservative; never
   auto-escalates past the approval gate.
 
-## 7. Architecture lenses (optional, dev)
+## 7. Architecture lenses (dev — mostly opt-in, one default-on gate)
 
-Offered as optional dev lenses — never an imposed source structure (openness stance):
+Dev lenses — never an imposed source structure (openness stance). Most are opt-in; the
+contract-surface spec gate is a *default-on* gate (still knob-disable'able) because a
+silently-degraded contract check is a real correctness hole, not a style preference:
 - **Clean Architecture** — optional lint: business logic free of IO/framework imports
   (e.g. a `domain/` no-`fs`/`http` check). Enable per repo; cowork imposes no layout.
-- **API-First** — when an API is in scope, converge the contract (endpoints, shapes,
-  errors) in the design doc BEFORE implementing; `gap-detector`'s 3-way contract check
-  (spec↔server↔client) then verifies it. A nudge, not a gate.
+- **Contract-surface spec gate (default-ON in dev; conditional on interface surface)** —
+  when the WorkList declares an **interface surface** (server route / client fetch / MCP
+  tool / CLI flag / exported function signature), the declared contract doc (`api-spec` —
+  a design-phase output) is REQUIRED before `do`. This is a *default-on gate* (free-form
+  local-config knob `contractSpecGate`, disable per repo), NOT a nudge — because without a
+  declared spec the contract check silently collapses to 2-way (server↔client) and can no
+  longer catch a *wrong-shaped intended contract*. The gate keeps the check at full
+  **3-way** (spec↔server↔client) strength; `gap-detector` then verifies it.
+  - **Scope discipline** (why it lives in dev-profile, not the generic skill): fires ONLY
+    when an interface surface exists — pure UI / CLI-less / data-only / non-dev sprints are
+    untouched. "Mandatory" is scoped to *dev sprints that actually have an API surface*.
+  - **No silent degradation**: interface surface present + spec absent →
+    (gate ON) design-phase **FAIL**, fed to the fix loop; (gate OFF by knob) run 2-way but
+    **LOG** "contract check degraded to 2-way — no api-spec" in the QA table. Never a silent
+    2-way (matches the global NO-silent-truncation stance).
+  - **Bootstrap friction reducer** (don't demand a hand-written spec from scratch): scan
+    the server routes (and MCP / CLI / signature surfaces) to **auto-scaffold an `api-spec`
+    STUB** — URL · method · params reverse-derived from code → the human fills only the
+    response shapes. api-first made cheap: derive from code, then converge.
+  - **Generalized beyond REST**: the same 3-way diff applies to every surface in the user's
+    CONTRACT-SYNC rule — MCP tool in/out schema ↔ handler ↔ advertised description; CLI flag
+    ↔ parser ↔ docs/help; function signature ↔ callsites. REST is the first instance, not
+    the only one.
 - **7-Layer dataflow verification** — the web-fullstack dataflow sub-lens (§3.6): trace
   UI→Client→API→Validation→DB→Response→UI as an *example* end-to-end checklist (opt-in;
   non-web dev traces its own end-to-end path). Executed by `gap-detector` / a runtime probe.
