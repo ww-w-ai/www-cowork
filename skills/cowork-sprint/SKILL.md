@@ -117,8 +117,19 @@ Main Session = cowork-sprint Leader
    (design doc in → Phase 4 直行). Planning is interactive; deferring it would pause
    the autonomous run per feature.
 6. Initialize .ww-w-ai/cowork-sprint/status.json  (schema → references/sprint-method.md).
-7. ★ APPROVAL GATE: present the roadmap (sprints, order, parallelism, agents) and get
-   the user's go. Do NOT start execution before approval.
+6R. ★ ROADMAP REVIEW (the R in PRDCA) — dispatch an ADVERSARIAL PANEL, not one reviewer.
+   - Lenses picked for THIS roadmap; minimum = completeness · sizing · sequencing (add
+     authority-fit / scope / reversibility when relevant). One agent per lens, concurrent,
+     purpose-fit agentType where one exists. The Leader wrote the plan → the Leader does
+     not review it.
+   - Each returns {verdict, findings[{severity, claim, where, whyItSinks, fix}]} at ≥80
+     confidence only. BLOCKER ⇒ fix the roadmap, re-run only the blocking lenses, re-gate.
+     Same finding from 2+ lenses independently ⇒ BLOCKER.
+   - Fix BEFORE showing the user: the approval gate should receive a vetted roadmap.
+   - Lens table, contract, gate rules → references/plan-review-panel.md
+7. ★ APPROVAL GATE: present the roadmap (sprints, order, parallelism, agents) + the panel
+   result (lenses run, verdict, findings fixed/waived) and get the user's go.
+   Do NOT start execution before approval.
 ```
 
 - `--auto-plan` → run steps 0-6 autonomously (sensible defaults, no dialogue), still write plans + show the roadmap, then proceed.
@@ -183,23 +194,36 @@ independent clusters dispatched concurrently):
   phase N-1 must be complete (its exit condition met) before phase N starts. → references/sprint-method.md §5
 
   CYCLE per sprint:
-    research → plan-detail → [indep gap-review] → design → [indep design-review] → do → QA → fix → intent-audit → commit → [adversarial before irreversible] → deploy/deliver
+    research → plan-detail → [R panel] → design → [R panel] → do → QA → fix → intent-audit → commit → [adversarial before irreversible] → deploy/deliver
     (then, ONCE after all sprints: → doc-sync. Both commit & doc-sync are mandatory, not optional — see below.)
     · research = gather the facts THIS sprint needs before planning detail (codebase reality,
       external specs, constraints); never start `do` on assumptions (Research-before-Do).
     · MODEL SPLIT (judgment in main, mechanics delegated):
       authoring (plan-detail, design) = the LEADER in main (thinking ON, whatever model the session
         runs — typically Opus). Deep judgment lives here, never in a subagent.
+        ★ **Before freezing a design, cross-check its THREE representations of the same work agree:
+        the layout/placement description ↔ the test-migration list ↔ the WorkList items.** When these
+        drift (e.g. the tier table says field X sits in the base layer, but the migration list only
+        touches X's old collapsed section), the implementer gets conflicting signals and picks one —
+        producing a deviation that costs a fix round. A one-pass 3-way reconcile at freeze is cheaper
+        than a post-implementation correction. (Real case: an S2 design's tier table vs migration list
+        disagreed on 2 fields → 2 implementer deviations → an extra fix round.)
       do / QA = delegated to /pdca-wf execution-only (its Workflow; thinking-off is fine, coding is
         mechanical) — not a separate model choice here.
-      [indep gap-review] after plan-detail / [indep design-review] after design — an INDEPENDENT
-        fresh-context reviewer (subagent) reads the Leader's plan/design for missing deps, false
-        "already implemented" assumptions, file/schema conflicts, scope/edge/arch risk, and ★ **sprint
-        sizing (MANDATORY review item): each sprint ≈ 1 human-week — flag any over-large sprint (→ split)
-        or trivially-small one (→ merge); a mis-sized roadmap is a plan defect, not a nit**. Its value is
-        INDEPENDENCE (catches what the author's own context is blind to), NOT reasoning depth —
+      [R panel] after plan-detail / after design — the R in PRDCA. An ADVERSARIAL PANEL of
+        INDEPENDENT fresh-context subagents, one agent per LENS, dispatched concurrently — never a
+        single reviewer and never N identical clones. Lenses picked for this sprint; minimum =
+        completeness + authority-fit + the sprint's dominant risk. ★ **sizing is a MANDATORY lens
+        at roadmap level: each sprint ≈ 1 human-week — over-large → split, trivially small → merge;
+        a mis-sized roadmap is a plan defect, not a nit**. Each returns
+        {verdict, findings[{severity, claim, where, whyItSinks, fix}]} at ≥80 confidence only.
+        BLOCKER (or the same finding from 2+ lenses independently) ⇒ fix the plan, re-run only the
+        blocking lenses, re-gate; `do` MUST NOT start while a BLOCKER stands. The panel's value is
+        INDEPENDENCE (it catches what the author's context is blind to), NOT reasoning depth —
         subagents run thinking-OFF (CC runAgent.ts:682), so a cheaper model suffices; don't mislabel
-        it "Opus deep review". Fold CRITICAL/HIGH back before proceeding; skip if trivial (<30min) or unchanged.
+        it "Opus deep review". Skip only when the sprint is single-surface + reversible + no new
+        pattern + mechanically verifiable (log the skip). Lens table + contract →
+        references/plan-review-panel.md
       [adversarial before irreversible] = the safety gate: independent lenses (subagents, thinking-off
         = independence) then the Leader's final judgment in main (thinking) before approving. Never
         approve an irreversible action off a thinking-off review alone.
@@ -322,6 +346,38 @@ Output = one retrospective report `docs/05-reports/<dt>-<sprint>-retrospective.m
 
 Parked (NOT in scope, recorded only if surfaced): process/method meta-edits to the skill itself, and risk/cost retrospect — out of the default A+C+E set.
 
+## OODA — tactics inside execution (PRDCA is strategy, this is tactics)
+
+The roadmap says what to do; OODA says what to do when reality disagrees mid-run.
+`Observe → Orient → Decide → Act`, then keep moving. **Orient decides everything**: if an
+observation contradicts a premise the R panel accepted, the premise loses, not the observation.
+The failure to avoid is observing a surprise and executing the existing plan harder.
+
+| Observation | Decide | Autonomy |
+|---|---|---|
+| mechanical failure (typo, missing dep, flaky env) | adjust-in-plan | keep running |
+| same failure 3× or 10+ tool calls with no progress | re-plan that slice → re-run only the affected R lenses | keep running |
+| a premise the design rested on is false | re-plan that slice; other slices keep running | keep running |
+| real work outside this sprint's goal | defer to `deferredDecisions[]` | keep running — never widen scope mid-run |
+| genuine toss-up, no derivable answer | commit an anchor, pick one, log it | keep running |
+| the surprise makes an irreversible action look wrong | escalate | **stop at the safety gate, report** |
+
+Only the last row stops the run — the autonomous contract still holds. Log every decision
+(observation → decision → why) to `status.json`; repeated re-plans sharing one cause are a
+standing plan-authoring defect and belong in the retrospective's Act, not in the next preamble.
+Detail → `references/plan-review-panel.md` §5.
+
+## Turn discipline — one perspective per turn
+
+Several short turns beat one long turn that does everything. Test: **"is there exactly one
+question this turn must answer?"** If not, split. Split along perspective boundaries —
+authoring ≠ review ≠ execution ≠ doc update; non-deterministic generation (copy, images,
+browser work) ≠ deterministic assembly (code, build). This buys depth per perspective, isolated
+failures, an intervention point for the user, and the previous result available to steer the next.
+**Not the same as batching tool calls** — independent lookups serving one perspective still go in
+one message. Same mistake at roadmap scale = an over-large sprint, which is why the sizing lens
+is mandatory.
+
 ## Gates & safety
 
 - **Planning approval gate** (PHASE 0 step 6) — mandatory before execution unless `--auto-plan`.
@@ -355,4 +411,4 @@ PHASE 1 runs unattended, so "when do I stop and ask the human" must be explicit.
 - Needs a goal or plan input. For a single quick edit with no multi-step scope, just do the work directly — don't spin up a sprint.
 - **Single FEATURE (one cohesive feature, multi-step but not multi-sprint) → use `/pdca-wf`** (this plugin): one PDCA cycle with native Workflow as the execution engine (main owns Plan/Design; Research/Do/Check run as Workflow scripts; verify-to-100). cowork-sprint is for MULTI-feature initiatives; PHASE 1 calls pdca-wf **execution-only** (per-feature design doc + WorkList were frozen in PHASE 0 — never let pdca-wf re-enter its interactive Phases 1–3 mid-run).
 - Leader never delegates leadership to a subagent (see *Execution Model*).
-- Files referenced every run: `templates/agent.template.md`, `templates/sprint-report.template.md`, `templates/retrospective.template.md`, `references/agent-authoring.md`, `references/sprint-method.md` — read them when the relevant step arrives (don't assume from memory). **Templated outputs are filled, never restructured** — fixed sections, fill the slots.
+- Files referenced every run: `templates/agent.template.md`, `templates/sprint-report.template.md`, `templates/retrospective.template.md`, `references/agent-authoring.md`, `references/sprint-method.md`, `references/plan-review-panel.md` (R-panel lenses · OODA · turn discipline) — read them when the relevant step arrives (don't assume from memory). **Templated outputs are filled, never restructured** — fixed sections, fill the slots.

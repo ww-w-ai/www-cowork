@@ -69,6 +69,15 @@ Create a TodoWrite todo per phase. Mark `in_progress` on entry, `completed` only
 - Detect `verifyCmd` for this stack (e.g. `npm test && npm run lint && tsc --noEmit`), or `null` if non-verifiable.
 - Exit: design doc + WorkList(JSON) + fileGroups + agentMap + verifyCmd ready.
 
+### Phase 3R — Plan review (MAIN dispatches an adversarial panel) — the R in PRDCA
+- **A plan defect found in Check costs a whole build cycle. Catch it here instead.**
+- Pick lenses by what would sink THIS design (min 2 = completeness + dominant risk; typical 3; cap 5). Dispatch **one agent per lens, concurrently, purpose-fit `agentType` where one exists**. Never a fixed clone count. **The design's author does not review it** — fresh-context subagents only.
+- Each reviewer returns schema-forced `{verdict, findings[{severity, claim, where, whyItSinks, fix}]}`; findings only at ≥80 confidence, no style/wishlist nits.
+- **Exit gate**: BLOCKER present → fix the design, re-run only the blocking lenses, re-gate. 2+ lenses raising the same finding independently = BLOCKER regardless of stated severity. MAJOR → fix if cheap, else record as accepted risk in the design doc. Phase 4 MUST NOT start while a BLOCKER stands.
+- Skip the panel only when ALL hold: single file, reversible, no new pattern, verifyCmd exists (self-check one pass instead). A panel on trivial work becomes a rubber stamp.
+- Record lenses used + verdict + findings kept/waived in the design doc.
+- Lens table, return schema, and full gate rules → **`references/plan-review-panel.md`**.
+
 ### Phase 4 — Do (Workflow)
 - Invoke `Workflow({script, args:{workList, fileGroups, agentMap, designPath, dt, feature}})` using the Do template. **Inline the real schemas into the script string** (sandbox has no fs).
 - Script runs `fileGroups` with `parallel()` across files and serial within a file (no per-item worktree — same-file serialization prevents lost-update).
@@ -87,6 +96,24 @@ Create a TodoWrite todo per phase. Mark `in_progress` on entry, `completed` only
 - Update `01-built/<feature>.md` (LIVING, as-built; section skeleton in `references/doc-templates.md`). See **Document lifecycle** below.
 - Hand off to `/cowork-doc-sync` for final taxonomy alignment.
 - Exit: report + 01-built updated, planned reconciled.
+
+## OODA — tactical layer inside Do/Check (PRDCA is strategy, this is tactics)
+
+When execution contradicts the plan, do not just push harder along it. `Observe → Orient → Decide → Act`, then keep moving. **Orient is the step that decides everything**: if an observation breaks a premise the R panel accepted, the premise loses, not the observation.
+
+| Observation | Decide |
+|---|---|
+| mechanical failure (typo, missing import, flaky env) | adjust-in-plan, continue |
+| same failure 3× or 10+ tool calls with no progress | re-plan the slice → re-run **only** the affected R lenses |
+| a design premise turns out false | re-plan that slice; untouched slices keep running |
+| real work outside this feature's goal | defer as a follow-up item — never widen scope mid-run |
+| the surprise makes an irreversible action look wrong | escalate — stop before the safety gate, report |
+
+Log each decision (observation → decision → why) into the Check report; repeated re-plans with one cause are a standing defect → fold into Act. Detail → **`references/plan-review-panel.md` §5**.
+
+## Turn discipline — one perspective per turn
+
+Splitting work across several short turns beats executing it all in one long turn. Ask **"is there exactly one question I must answer in this turn?"** — if not, split. Keep authoring, review, and execution in separate turns; keep non-deterministic generation separate from deterministic assembly. This is about *perspectives*, not tool calls — independent lookups serving the same perspective still batch into one message.
 
 ## Gate model (two orthogonal axes)
 
@@ -140,6 +167,10 @@ All execution-phase scripts return schema-validated JSON. Full schemas: `referen
 - About to pause the Workflow on matchRate<100 → STOP (quality gate has no branch; loop-to-100 then report).
 - About to auto-run git push / deploy / vault bulk inside a Workflow → STOP (safety gate stays in main).
 - Multi-feature scope creeping in → STOP, route to `/cowork-sprint`.
+- About to start Do with a BLOCKER open from Phase 3R → STOP (fix the design first).
+- About to review your own design, or to spawn N identical reviewers instead of distinct lenses → STOP.
+- About to push harder along a plan that execution just contradicted → STOP, run Orient (OODA) before deciding.
+- About to batch several unrelated perspectives into one turn → STOP, split them.
 
 ## Quick reference
 
@@ -149,8 +180,9 @@ All execution-phase scripts return schema-validated JSON. Full schemas: `referen
 | 1 Research | Workflow | `06-research/<dt>-<feature>.md` | — |
 | 2 Plan | main (thinking) | `02-planned/<dt>-<feature>-plan.md` | — |
 | 3 Design | main (thinking) | `02-planned/<dt>-<feature>-design.md` + WorkList | fixed artifact = Do input |
+| 3R Plan review | main → adversarial panel | lenses + verdict recorded in design doc | **BLOCKER ⇒ Do cannot start** |
 | 4 Do | Workflow | code | — |
 | 5 Check/Act | Workflow loop-to-100 | `05-reports/<dt2>-<feature>-check.md` | quality: no branch |
 | 6 Report | main | report + `01-built/<feature>.md` + cowork-doc-sync | safety: thinking review → irreversible gated |
 
-References: `references/workflow-scripts.md` (script templates) · `references/schemas.md` (JSON schemas) · `references/taxonomy-map.md` (taxonomy + lifecycle + cowork-doc-sync handoff).
+References: `references/workflow-scripts.md` (script templates) · `references/schemas.md` (JSON schemas) · `references/plan-review-panel.md` (Phase 3R lenses + OODA tactics) · `references/taxonomy-map.md` (taxonomy + lifecycle + cowork-doc-sync handoff).
