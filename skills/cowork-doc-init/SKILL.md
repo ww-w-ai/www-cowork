@@ -30,12 +30,18 @@ For fitting an existing project to the cowork-doc-sync taxonomy for the first ti
 3. Write a gap-analysis report (current → proposed mapping: destination per doc/section + rationale + move/delete/tombstone action).
    → Present to the user. Get a nod before executing bulk/risky moves.
 3-b. fold-check (for each legacy candidate): has the current truth been absorbed into as-built (LIVING)?
-     ★ **If LIVING cites that plan as the "detail spec"** = only summarized = **not-folded → must not legacy it, keep in place as FROZEN-built.** (taxonomy §3.)
+     ★ **If LIVING cites that plan as the "detail spec"** = only summarized = **not-folded → must not legacy it.** (taxonomy §3.)
+3-c. built-vs-legacy split for SHIPPED docs (taxonomy **§3-a** — MUST read it; the most-missed call):
+     `if shipped AND it is a design/spec (the detail)` → **`01-built/design-specs/`** (relabel `LIVING (as-built detail spec)`, body verbatim)
+     `elif shipped AND it is a process artifact (roadmap/sprint plan/PRD/kickoff)` → **`04-legacy`** + tombstone (consumed; history = 05-reports)
+     `elif superseded/abandoned (never built, or built differently)` → **`04-legacy`** + tombstone
+     ⛔ **Nothing shipped may stay in `02-planned`** — a label cannot rescue a doc filed under "planned"; folder beats label. Goal: `02-planned` = only genuinely unstarted work.
 4. Execute relocation (taxonomy §3 rules):
    - Whole doc superseded (fully-folded) → move to 04-legacy + tombstone
    - Section move → cut verbatim and paste into the destination doc. Delete the original location + a 1-line pointer if needed.
    - Pure clutter → delete. Tool-generated artifacts (commit-log etc.) → do not touch (§4).
    - ★ **Update inbound references (MUST)**: before moving, check blast radius (`grep -rn <basename>.md`). After moving, **fix broken LIVING/ACTIVE/manual → MOVED links** (if the plan was "current," redirect to as-built). intra-legacy/frozen internal links = preserve (history).
+   - ★ **Prove the repair (MUST — taxonomy §3)**: rewrite links from a **filesystem scan of where files actually are**, then verify by resolving every LIVING-layer reference against the filesystem. **Never verify with the same loop that did the repair** — that reports false green (real case: a sed loop silently matched nothing, its twin grep loop said "0 broken," 18 links were dead).
 5. Establish single LIVING authority: consolidate the current truth into 01-built. Assign status label headers.
 6. File the report as 05-reports/YYYYMMDD-cowork-doc-init.md (work record + skill defects found).
 ```

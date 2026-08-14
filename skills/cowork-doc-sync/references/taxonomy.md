@@ -10,8 +10,8 @@ Numbering applies **only to docs we authored.** Tool-generated artifacts (§4) a
 | Folder | Content | Default status |
 |---|---|---|
 | `00-reference` | Curated stable background (product definition, naming, external-system analysis, porting specs) | LIVING/stable |
-| `01-built` | **Implementation/current — single LIVING authority** (as-built architecture). "The current truth is here" | **LIVING** |
-| `02-planned` | Plan/future (decided but not yet built) | ACTIVE-PLAN |
+| `01-built` | **Implementation/current — single LIVING authority.** Summary (as-built architecture) **+ the detail specs of what shipped** (subfolder, e.g. `design-specs/` — see §3-a). "The current truth is here, summary *and* detail" | **LIVING** |
+| `02-planned` | Plan/future (decided but **not yet built**). Once built → §3-a splits it to `01-built` (design/spec) or `04-legacy` (process artifact). Nothing shipped stays here | ACTIVE-PLAN |
 | `03-manual` | User/technical manuals + handover | LIVING (synced) |
 | `04-legacy` | Superseded/deprecated docs (once authoritative) | FROZEN |
 | `05-reports` | Work snapshots: PDCA, gap analysis, code review, code-health observations, session reports. Immutable, by date | FROZEN-by-nature |
@@ -48,7 +48,32 @@ File convention: `05-reports`/`06-research` use a date prefix `YYYYMMDD-<topic>.
 - **LIVING/ACTIVE/manual → MOVED links** must be updated. If it was "for the current state, see this plan" → **redirect to LIVING (as-built)** (not the plan). If it is a plain path reference → the new path (04-legacy/05-reports/…).
 - **intra-legacy/frozen internal links** (both moved together into frozen) = **preserve** (history, do not over-maintain). Even if broken it is fine, since it is inside a frozen doc.
 
-**fold-before-move reinforcement — "LIVING cites it as detail = not-folded":** even for a completed plan, if a **LIVING doc cites that plan as the "detail spec"** → the current truth is only *summarized* in LIVING and the detail lives only in the plan = **not fully-folded → must not legacy it.** Keep in place with a FROZEN-built label. (Legacy only when LIVING has absorbed the detail too.)
+**Verify link repair against REALITY, never with the same loop that did the repair (MUST):** the repair and its check must not share a mechanism, or a silent failure passes itself. Do it this way:
+1. Build a map of **where each file actually is now** (`find`/glob the docs tree) — not a list of where you *intended* to move things.
+2. Rewrite each reference to the scanned real path. Leave ambiguous basenames (same name in 2+ folders) untouched and **report** them.
+3. Verify by **resolving every reference in the LIVING/ACTIVE/manual layers against the filesystem** (`exists?`), and print the count of broken ones. Zero must be *proved*, not assumed.
+
+*(Real failure this encodes: a doc-init pass repaired links with `for f in …; do sed -i …; done`, then "verified" with a `grep` loop over the same list/paths. It reported "0 broken." The sed had never matched — **18 links were dead** and the false green was only caught later by an unrelated audit. Same-mechanism verification is not verification; a diff-count from the repair step is not evidence either — only filesystem resolution is.)*
+
+**fold-before-move reinforcement — "LIVING cites it as detail = not-folded":** even for a completed plan, if a **LIVING doc cites that plan as the "detail spec"** → the current truth is only *summarized* in LIVING and the detail lives only in the plan = **not fully-folded → must not legacy it.** (Legacy only when LIVING has absorbed the detail too.) **It does not stay in the plan folder either — see the built-vs-legacy split below.**
+
+### 3-a. Built-vs-legacy split for SHIPPED docs (MUST — the most-missed call)
+
+Once a plan ships, "which folder" has **two** right answers, not one. Deciding by *"is it done?"* is the classic error — done docs split by **what kind of doc it is**:
+
+| The doc is… | → | Why |
+|---|---|---|
+| a **design/spec** (what to build + the detail) **AND it shipped as designed** | **`01-built/<detail-subfolder>/`** (e.g. `01-built/design-specs/`) — **relabel** to `LIVING (as-built detail spec)` | It is no longer a plan — it is **the detail of the current truth**. `01-built` = summary (as-built §) **+ detail (this doc)**. Both live under built. |
+| **superseded / abandoned** design (never built, or built differently) | **`04-legacy/`** + tombstone | Not the current truth. History only. |
+| a **process artifact** — roadmap, sprint plan, PRD-lite, kickoff, WorkList, execution sequence | **`04-legacy/`** + tombstone | Consumed on execution. Its history belongs to `05-reports`. Keeping it under built implies it still governs work. |
+
+**Rules:**
+- **Never leave a shipped design spec in the plan folder.** "Done, but I labeled it" still reads as *plan* by folder, and folder beats label for both humans and LLMs.
+- **Relabel on move, don't rewrite.** Body stays verbatim (it is a point-in-time design). Replace the header with: `> Status: LIVING (as-built detail spec) — shipped. Summary = <as-built §>. NOT a plan — do not read as "not started". Body preserves design-time wording (future tense may remain); on conflict, code + the as-built § win.`
+- **Split test when one doc mixes both** (a design doc with a sprint plan stapled on): the design half → built, the process half → legacy. If inseparable, judge by **which half a reader needs today** (usually the design).
+- **The gain:** `02-planned` ends up containing *only genuinely unstarted work* — so "what's actually planned?" becomes answerable by listing one folder, and `01-built` answers "current truth, summary AND detail" without a second hop into a plan folder.
+
+*(Real failure this encodes: a doc-init pass correctly kept 12 shipped detail specs out of legacy — then left them in `02-planned` under a FROZEN-built label, because the rule above only said "keep in place." The user's correction: "그런 건 built에 서브폴더를 만들고 옮겨야 하는 거야 — built에 상세한 정보도 같이 있어야지." Folder is the signal; a label cannot rescue a doc filed under "planned.")*
 
 ## 4. External/tool-generated artifacts (outside our taxonomy — not controllable)
 
