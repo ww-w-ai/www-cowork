@@ -80,6 +80,17 @@ class ValidationTests(unittest.TestCase):
         doc = fixture(); doc["sprints"][0].update(status="in-progress", phase="research"); doc["sprints"][1].update(status="blocked", phase="plan")
         with self.assertRaises(state.StateError): state.validate(doc)
 
+    def test_cluster_shape_and_legacy_compatibility(self):
+        state.validate(fixture())
+        doc = fixture("mixed")
+        doc["clusters"] = [
+            {"id": "C1", "mode": "sequential", "sprintIds": ["S1"], "integrationOrder": ["S1"]},
+            {"id": "C2", "mode": "sequential", "sprintIds": ["S2"], "integrationOrder": ["S2"]},
+        ]
+        state.validate(doc)
+        doc["clusters"][1]["sprintIds"] = ["S1", "S2"]
+        with self.assertRaises(state.StateError): state.validate(doc)
+
 
 class TransitionTests(unittest.TestCase):
     def setUp(self):
@@ -128,6 +139,37 @@ class TransitionTests(unittest.TestCase):
         with self.assertRaises(state.StateError): self.run_command("start-sprint", sprint_id="S1")
         self.run_command("archive-sprint", sprint_id="S1")
         self.assertEqual("archived", self.doc["sprints"][0]["status"])
+
+    def test_cluster_barrier_blocks_later_sprint(self):
+        self.doc["executionMode"] = "mixed"
+        self.doc["sprints"][1]["deps"] = []
+        self.doc["clusters"] = [
+            {"id": "C1", "mode": "sequential", "sprintIds": ["S1"], "integrationOrder": ["S1"]},
+            {"id": "C2", "mode": "sequential", "sprintIds": ["S2"], "integrationOrder": ["S2"]},
+        ]
+        with self.assertRaises(state.StateError): self.run_command("start-sprint", sprint_id="S2")
+        self.run_command("start-sprint", sprint_id="S1")
+        self.run_command("fail-sprint", sprint_id="S1")
+        with self.assertRaises(state.StateError): self.run_command("start-sprint", sprint_id="S2")
+
+    def test_concurrent_cluster_allows_two_active_members(self):
+        self.doc["executionMode"] = "concurrent"
+        self.doc["sprints"][1]["deps"] = []
+        self.doc["clusters"] = [{"id": "C1", "mode": "concurrent", "sprintIds": ["S1", "S2"], "integrationOrder": ["S1", "S2"]}]
+        self.run_command("start-sprint", sprint_id="S1")
+        self.run_command("start-sprint", sprint_id="S2")
+
+    def test_archived_done_member_satisfies_cluster_barrier(self):
+        self.doc["clusters"] = [
+            {"id": "C1", "mode": "sequential", "sprintIds": ["S1"], "integrationOrder": ["S1"]},
+            {"id": "C2", "mode": "sequential", "sprintIds": ["S2"], "integrationOrder": ["S2"]},
+        ]
+        self.run_command("start-sprint", sprint_id="S1")
+        for phase in state.ACTIVE_PHASES[1:]: self.run_command("set-phase", sprint_id="S1", phase=phase)
+        self.run_command("set-commit", sprint_id="S1", commit="abcdef1")
+        self.run_command("complete-sprint", sprint_id="S1", result_file=None)
+        self.run_command("archive-sprint", sprint_id="S1")
+        self.run_command("start-sprint", sprint_id="S2")
 
 
 class PersistenceTests(unittest.TestCase):

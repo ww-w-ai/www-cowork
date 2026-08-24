@@ -23,8 +23,9 @@ PAUSE_CODES = {"QUALITY_GATE_FAIL", "ITERATE_EXHAUSTED", "AGENT_EVOLUTION_EXHAUS
                "BUDGET_TIME_EXCEEDED", "IRREVERSIBLE_ACTION", "MERGE_CONFLICT"}
 COMMIT_RE = re.compile(r"^[0-9a-fA-F]{7,64}$")
 ROOT_FIELDS = {"schemaVersion", "revision", "runId", "goal", "roadmapFile",
-               "executionMode", "git", "sprints", "pause", "openDecisions", "updatedAt"}
-SPRINT_FIELDS = {"id", "deps", "planFile", "risk", "status", "phase", "commit", "resultFile"}
+               "executionMode", "git", "sprints", "clusters", "pause", "openDecisions", "updatedAt"}
+SPRINT_FIELDS = {"id", "deps", "owns", "planFile", "risk", "status", "phase", "commit", "resultFile"}
+CLUSTER_FIELDS = {"id", "mode", "sprintIds", "integrationOrder"}
 RISK_FIELDS = {"impact", "recovery", "securityExternal", "contract", "verification", "total"}
 GIT_FIELDS = {"baseBranch", "worktree", "sprintBranch", "lastCommit"}
 PAUSE_FIELDS = {"code", "sprintId", "phase", "detail", "blockedBy", "createdAt"}
@@ -80,7 +81,7 @@ def risk_level(risk: dict[str, int]) -> str:
 
 
 def validate(state: Any) -> dict[str, Any]:
-    state = _object(state, ROOT_FIELDS, ROOT_FIELDS, "state")
+    state = _object(state, ROOT_FIELDS, ROOT_FIELDS - {"clusters"}, "state")
     if state["schemaVersion"] != 1:
         raise StateError("schemaVersion must be 1")
     if not isinstance(state["revision"], int) or isinstance(state["revision"], bool) or state["revision"] < 0:
@@ -102,7 +103,7 @@ def validate(state: Any) -> dict[str, Any]:
     active = 0
     by_id: dict[str, dict[str, Any]] = {}
     for index, raw in enumerate(state["sprints"]):
-        sprint = _object(raw, SPRINT_FIELDS, SPRINT_FIELDS - {"resultFile"}, f"sprints[{index}]")
+        sprint = _object(raw, SPRINT_FIELDS, SPRINT_FIELDS - {"resultFile", "owns"}, f"sprints[{index}]")
         sid = _text(sprint["id"], f"sprints[{index}].id")
         if sid in ids:
             raise StateError(f"duplicate sprint id: {sid}")
@@ -111,6 +112,11 @@ def validate(state: Any) -> dict[str, Any]:
             raise StateError(f"{sid}.deps must contain non-empty strings")
         if len(set(sprint["deps"])) != len(sprint["deps"]):
             raise StateError(f"{sid}.deps contains duplicates")
+        owns = sprint.get("owns", [])
+        if not isinstance(owns, list) or any(not isinstance(x, str) or not x for x in owns):
+            raise StateError(f"{sid}.owns must contain non-empty strings")
+        if len(set(owns)) != len(owns):
+            raise StateError(f"{sid}.owns contains duplicates")
         _relative(sprint["planFile"], f"{sid}.planFile")
         if sprint.get("resultFile") is not None:
             _relative(sprint["resultFile"], f"{sid}.resultFile")
@@ -149,6 +155,39 @@ def validate(state: Any) -> dict[str, Any]:
         for dep in by_id[sid]["deps"]: visit(dep)
         visiting.remove(sid); visited.add(sid)
     for sid in ids: visit(sid)
+
+    clusters = state.get("clusters")
+    cluster_of: dict[str, int] = {}
+    if clusters is not None:
+        if not isinstance(clusters, list) or not clusters:
+            raise StateError("clusters must be a non-empty array")
+        cluster_ids: set[str] = set()
+        for index, raw in enumerate(clusters):
+            cluster = _object(raw, CLUSTER_FIELDS, CLUSTER_FIELDS, f"clusters[{index}]")
+            cid = _text(cluster["id"], f"clusters[{index}].id")
+            if cid in cluster_ids: raise StateError(f"duplicate cluster id: {cid}")
+            cluster_ids.add(cid)
+            members = cluster["sprintIds"]
+            if not isinstance(members, list) or not members or len(set(members)) != len(members):
+                raise StateError(f"{cid}.sprintIds must be a non-empty unique array")
+            if set(members) - ids: raise StateError(f"{cid} references a missing sprint")
+            if cluster["mode"] not in {"sequential", "concurrent"}: raise StateError(f"{cid}.mode is invalid")
+            if cluster["mode"] == "concurrent" and len(members) < 2: raise StateError(f"{cid} concurrent mode needs two sprints")
+            if cluster["mode"] == "sequential" and len(members) != 1: raise StateError(f"{cid} sequential mode needs one sprint")
+            if cluster["integrationOrder"] != members: raise StateError(f"{cid}.integrationOrder must match stable sprint order")
+            for sid in members:
+                if sid in cluster_of: raise StateError(f"sprint appears in multiple clusters: {sid}")
+                cluster_of[sid] = index
+        if set(cluster_of) != ids: raise StateError("clusters must contain every sprint exactly once")
+        for sid, sprint in by_id.items():
+            if any(cluster_of[dep] >= cluster_of[sid] for dep in sprint["deps"]):
+                raise StateError(f"{sid} dependency must be in an earlier cluster")
+        active_clusters = {cluster_of[sid] for sid, sprint in by_id.items() if sprint["status"] in {"in-progress", "blocked"}}
+        if len(active_clusters) > 1: raise StateError("active sprints must share one cluster")
+        if active_clusters:
+            active_index = next(iter(active_clusters))
+            if clusters[active_index]["mode"] != "concurrent" and active > 1:
+                raise StateError("sequential cluster permits one active sprint")
     for sid, sprint in by_id.items():
         if sprint["status"] in {"in-progress", "blocked", "completed"}:
             unsatisfied = [dep for dep in sprint["deps"]
@@ -189,6 +228,10 @@ def _raise(message: str) -> Any:
     raise StateError(message)
 
 
+def _dependency_done(sprint: dict[str, Any]) -> bool:
+    return sprint["status"] == "completed" or (sprint["status"] == "archived" and sprint["phase"] == "done")
+
+
 def mutate(path: Path, expected_revision: int, clock: Callable[[], str], operation: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
     original = path.read_bytes()
     try: state = validate(json.loads(original))
@@ -216,7 +259,15 @@ def apply_command(state: dict[str, Any], command: str, args: argparse.Namespace,
     sprint = _sprint(state, args.sprint_id) if hasattr(args, "sprint_id") and args.sprint_id else None
     if command == "start-sprint":
         if (sprint["status"], sprint["phase"]) != ("pending", "pending"): raise StateError("start requires pending/pending")
-        if any(_sprint(state, dep)["status"] != "completed" for dep in sprint["deps"]): raise StateError("all dependencies must be completed")
+        if any(not _dependency_done(_sprint(state, dep)) for dep in sprint["deps"]): raise StateError("all dependencies must be completed")
+        if state.get("clusters"):
+            target = next(i for i, cluster in enumerate(state["clusters"]) if sprint["id"] in cluster["sprintIds"])
+            earlier = [sid for cluster in state["clusters"][:target] for sid in cluster["sprintIds"]]
+            def cluster_done(sid: str) -> bool:
+                prior = _sprint(state, sid)
+                return _dependency_done(prior) and bool(prior["commit"])
+            if any(not cluster_done(sid) for sid in earlier):
+                raise StateError("all earlier clusters must be completed with commits")
         sprint.update(status="in-progress", phase="research")
     elif command == "set-phase":
         if sprint["status"] != "in-progress": raise StateError("set-phase requires in-progress status")
@@ -229,7 +280,7 @@ def apply_command(state: dict[str, Any], command: str, args: argparse.Namespace,
         sprint["commit"] = args.commit; state["git"]["lastCommit"] = args.commit
     elif command == "complete-sprint":
         if sprint["status"] != "in-progress" or sprint["phase"] != "commit" or not sprint["commit"]: raise StateError("completion requires in-progress/commit with commit")
-        if any(_sprint(state, dep)["status"] != "completed" for dep in sprint["deps"]): raise StateError("all dependencies must be completed")
+        if any(not _dependency_done(_sprint(state, dep)) for dep in sprint["deps"]): raise StateError("all dependencies must be completed")
         sprint.update(status="completed", phase="done")
         if args.result_file is not None: sprint["resultFile"] = _relative(args.result_file, "resultFile")
     elif command == "block-sprint":

@@ -446,3 +446,80 @@ Observed environment facts:
 - sandbox: `loggedIn: false`, `authMethod: none`;
 - outside sandbox: `loggedIn: true`, Claude Max authentication works;
 - sandbox creation under `~/.claude/session-env/` failed with `EPERM`.
+
+## S3 Sprint Brief
+
+### Problem
+
+`cowork-sprint` describes parallel work, but durable state stores only a global mode and sprint DAG. It cannot reproduce cluster boundaries, prove file-ownership safety, or block a later cluster until every earlier sprint is committed and checkpointed.
+
+### Success
+
+- A deterministic scheduler converts dependencies and ownership into sequential, concurrent, or mixed clusters.
+- Durable state stores clusters, ownership, and deterministic integration order.
+- Both hosts expose the same planning and completion semantics with native dispatch mechanisms.
+- Resume and transition guards enforce cluster barriers without weakening per-sprint gates or commits.
+
+### Out of scope
+
+Nested sprint leaders, parallel `pdca-wf` orchestrators, cross-worktree merge automation, remote actions, and S4 packaging work.
+
+### Dependencies and pre-mortem
+
+S1 supplies state/risk contracts; S2 supplies execution-only `pdca-wf`. Failure modes: a dependency enters the same cluster, two concurrent sprints own one file, a later cluster starts early, or integration order varies across resumes.
+
+## S3 Plan
+
+1. Extend the existing schema and validator with backward-compatible sprint ownership and cluster data.
+2. Add a pure scheduler that layers the DAG, serializes ownership collisions, and derives global mode and integration order deterministically.
+3. Enforce cluster barriers while retaining one commit and checkpoint per sprint.
+4. Make `cowork-sprint` a thin shared router; move preserved Claude mechanics to a runtime reference and add the Codex mapping.
+5. Point method/as-built docs to the scheduler as the mechanical authority.
+6. Test chains, diamonds, mixed graphs, dependency failure, collisions, deterministic integration, resume, host parity, and existing behavior.
+7. Run targeted tests, gap check, QA diff, independent commit, and checkpoint.
+
+## S3 Design
+
+## S3 Plan review contract
+
+- Scope: scheduler, durable cluster state, host routing, and lifecycle sync only.
+- Compatibility: legacy states without clusters validate; newly planned roadmaps persist clusters.
+- Safety: every delegated process, including Claude CLI, receives one cluster member's ownership allowlist and cannot bypass the leader's cluster barrier.
+- Done: schema/state/scheduler/parity tests prove the Plan rather than relying on prose.
+
+### Scheduling data
+
+Each sprint may store `owns: [repo-relative path or mutable-artifact key]`. State may store legacy data without clusters; new scheduler output includes:
+
+```json
+{"clusters":[{"id":"C1","mode":"sequential|concurrent","sprintIds":["S1"],"integrationOrder":["S1"]}]}
+```
+
+Every sprint appears exactly once. A dependency must be in an earlier cluster. Concurrent clusters contain at least two sprints with no ownership overlap. Ownership keys are normalized POSIX paths or explicit artifact keys; equality or ancestor/descendant path prefix counts as overlap. An empty `owns` list is unknown ownership and forces that sprint into a singleton cluster. `integrationOrder` is a stable roadmap-order permutation of `sprintIds`.
+
+### Deterministic scheduler
+
+`scripts/schedule.py` consumes sprint `{id,deps,owns}` records. It repeatedly selects dependency-ready sprints in roadmap order, packs a collision-free concurrent group, and serializes leftovers into later clusters. A singleton is sequential. Global mode is `sequential` when every cluster is singleton, `concurrent` when one concurrent cluster covers the roadmap, otherwise `mixed`.
+
+### Runtime and transitions
+
+The state helper is the enforcement point. Root `clusters` and sprint `owns` are optional in schema and validator so legacy state stays valid. When clusters exist, `start-sprint` locates the target cluster and rejects it unless every member of every earlier cluster is `completed` with a commit. It admits multiple active members only from the same concurrent cluster. Failed or blocked members therefore prevent advance even without a dependency edge. The leader integrates concurrent members in stored order and runs cluster-adjacent tests. Claude Code uses flat Agent/Workflow workers; Codex uses flat collaboration workers or the approved Claude CLI replacement, always with the current member's ownership allowlist. Neither path creates nested leaders or mutates state directly.
+
+`skills/cowork-sprint/SKILL.md` becomes a capability router. Host references own dispatch mechanics but share roadmap, Brief/Plan/Design, reviews, risk, clusters, commits, resume, and Done semantics.
+
+## S3 Design review contract
+
+- The scheduler is deterministic, cycle-safe, and handles empty ownership conservatively.
+- Schema and Python validation express the same cluster invariants.
+- Transition tests prove cluster admission, failure blocking, per-sprint commits, and resume.
+- Host mappings cannot redefine cluster or Done semantics.
+
+## S3 WorkList
+
+| ID | Work | Acceptance evidence | Priority |
+|---|---|---|---|
+| S3-01 | Schema ownership and cluster contract | schema/state fixtures define the scheduler input and durable output | P0 |
+| S3-02 | Cluster scheduler and transition guards | chain, diamond, mixed, collision, order, barrier, failure, and resume fixtures | P0 |
+| S3-03 | Thin entrypoint and host mappings | parity covers cluster semantics, commits, and native dispatch | P0 |
+| S3-04 | Reference and as-built sync | scheduler is the mechanical authority; preserved Claude behavior remains linked | P1 |
+| S3-05 | Targeted regression and report | prior contract/state suites and new S3 suites pass | P0 |

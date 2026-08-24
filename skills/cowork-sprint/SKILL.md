@@ -1,7 +1,7 @@
 ---
 name: cowork-sprint
 description: |
-  Plan-then-execute sprint orchestrator for multi-part work spanning several areas with sequential dependencies. Trigger on sprint plan, run sprints, plan and execute, /cowork-sprint, or implicit cues like "break this into sprints", "plan it all up front then build the whole thing", or any multi-feature initiative sharing one scope/timeline. Works like a real delivery team: ~1-human-week sprints, concurrent dispatch, leader (main session) dynamically scaffolds project-local agents for ANY domain (dev, marketing, research, ops, data). DO NOT use for single-file edits, one-shot bug fixes, work under ~a few hours, or a single-feature plan (use /pdca-wf instead).
+  Plan-then-execute orchestrator for multi-feature roadmaps with sequential, concurrent, or mixed sprint clusters. Trigger on sprint planning, execution, /cowork-sprint, or requests to break an initiative into sprints. DO NOT use for trivial edits, one-shot fixes, or one feature (use /pdca-wf).
 argument-hint: "[goal / feature set / plan-file(s)]  [--auto-plan]"
 allowed-tools:
   - Read
@@ -26,7 +26,7 @@ effort: max
 
 ## Shared contract and runtime
 
-The cross-host method is authoritative: **`../shared/references/cowork-method.md`**. Read it before planning or execution. On Claude Code, also read **`../shared/references/runtime-claude-code.md`**. A Codex distribution reads **`../shared/references/runtime-codex.md`** instead. This entrypoint retains existing Claude orchestration details until the host adapters are completed; it must not diverge from the shared core gates, risk policy, dynamic-role contract, or outputs.
+The cross-host method is authoritative: **`../shared/references/cowork-method.md`**. Read it before planning or execution. Select `references/runtime-claude-code.md` or `references/runtime-codex.md` from available capabilities; do not ask the user. If both or neither capability set is present, stop as ambiguous or unsupported. The detailed sections below preserve the Claude baseline. Host mappings cannot redefine shared gates, cluster schedule, risk, roles, or outputs.
 
 ## Mental model — a real delivery team
 

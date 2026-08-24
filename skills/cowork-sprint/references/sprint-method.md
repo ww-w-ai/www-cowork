@@ -31,6 +31,10 @@ Heuristic:
 
 ## 2. Dependency analysis & execution mode
 
+Use `../scripts/schedule.py` as the mechanical authority. Give every sprint `deps` and `owns`.
+The script produces durable `clusters` plus the global execution mode. Do not infer or hand-edit
+cluster membership after planning.
+
 For the sprint list, classify relationships (same rules apply across sprints and across phases inside a sprint):
 
 - **Explicit dependency** — "after X", "requires X".
@@ -38,7 +42,7 @@ For the sprint list, classify relationships (same rules apply across sprints and
 - **Independent** — no relation → **eligible for concurrent dispatch**.
 - **Circular** — resolve at planning time (split / merge / re-sequence).
 
-Then set execution mode per cluster:
+The scheduler sets execution mode per cluster:
 - **Independent + structured/bulk** → concurrent dispatch (parallel `Agent` calls ‖ one fan-out `Workflow`).
 - **Ordered, high-risk, LIVE-production, or exploratory** → sequential.
 
@@ -185,6 +189,11 @@ Hard safety rails (NEVER broken, even on the automatic path):
 ## 6. status.json schema
 
 Path: `.ww-w-ai/cowork-sprint/status.json`
+
+The minimal schema is authoritative in `status.schema.json`. New roadmaps include optional
+`sprints[].owns` and top-level `clusters[]`; legacy state without them remains valid. Each cluster
+stores `{id, mode, sprintIds, integrationOrder}`. The state helper enforces earlier-cluster
+completion and commits before later starts.
 
 ```json
 {
