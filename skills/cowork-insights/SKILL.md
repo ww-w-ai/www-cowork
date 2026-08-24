@@ -4,13 +4,15 @@ allowed-tools:
   - Bash
   - Read
   - Glob
-description: Invoke for "/cowork-insights" command or when the user asks to summarize, review, or report on past Claude Code sessions. Analyzes sessions to show key prompts (verbatim), structured assessments (goal/outcome/friction), tool usage patterns, and actionable insights. Produces HTML report + shareable Markdown for Jira/Notion/Slack. Three report formats — full (deep narrative), standard (core insights), minimal (quick team share). Supports --from/--to with absolute (2026-03-01) or relative (7d, 2w, 1m) dates. Trigger on phrases like weekly status update, sprint recap, what did I do with Claude, AI usage patterns, session history, minimal recap, what I worked on today, share with team, cowork-insights. DO NOT invoke for active tasks (debugging, refactoring, code review, project setup) or for commit-time recaps (use cowork-commit instead).
+description: Invoke for "/cowork-insights" or requests to summarize, review, or report on past Claude Code or Codex sessions. Shows key prompts, outcomes, friction, tools, and actionable insights. DO NOT invoke for active tasks or commit-time recaps (use cowork-commit).
 ---
 
 You are invoking the cowork-insights report generator. Your job is to:
 1. Determine the right parameters from the user's request
 2. Run the generator
 3. Show the results
+
+The engine scans Claude and Codex histories. Codex goal-control envelopes remain in raw history but are excluded from prompts and facet transcripts.
 
 ## Step 1: Determine Parameters
 

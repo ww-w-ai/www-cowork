@@ -1,6 +1,7 @@
 import { createReadStream } from 'fs'
 import { createInterface } from 'readline'
 import type { SessionMessage } from './session-scanner.js'
+import { isCodexGoalControl, normalizeTranscriptRow } from './transcript-normalizer.js'
 
 export type CommitLogTurn = {
   ts: string
@@ -57,7 +58,7 @@ const SYNTHETIC_RE =
   /^(<command-(name|message|args)>|<local-command-(stdout|stderr|caveat)>|<bash-(input|stdout|stderr)>|<user-prompt-submit-hook>|Caveat: The messages below were generated|Base directory for this skill:)/
 
 export function isSynthetic(text: string): boolean {
-  return SYNTHETIC_RE.test(text.trim())
+  return SYNTHETIC_RE.test(text.trim()) || isCodexGoalControl(text)
 }
 
 export function stripSystemTags(text: string): string {
@@ -136,7 +137,8 @@ export async function readRawMessages(filePath: string): Promise<RawMessage[]> {
       const t = l.trim()
       if (!t) continue
       try {
-        raw.push({ msg: JSON.parse(t) as SessionMessage, line })
+        const msg = normalizeTranscriptRow(JSON.parse(t))
+        if (msg) raw.push({ msg, line })
       } catch {
         // skip malformed lines
       }

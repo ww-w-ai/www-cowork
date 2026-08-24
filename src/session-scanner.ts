@@ -8,6 +8,7 @@ import { createReadStream } from 'fs'
 import { createInterface } from 'readline'
 import { homedir } from 'os'
 import { join } from 'path'
+import { normalizeTranscriptRow } from './transcript-normalizer.js'
 
 // ============================================================================
 // Types
@@ -153,6 +154,10 @@ export function getClaudeHome(): string {
   return process.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude')
 }
 
+export function getCodexHome(): string {
+  return process.env.CODEX_HOME || join(homedir(), '.codex')
+}
+
 function getProjectsDir(): string {
   return join(getClaudeHome(), 'projects')
 }
@@ -222,7 +227,7 @@ export async function scanSessionFiles(
       })
       .map(e => ({ name: e.name, fullPath: join(projectsDir, e.name) }))
   } catch {
-    return []
+    projectDirs = []
   }
 
   // Convert date range to epoch ms for mtime pre-filtering
@@ -300,6 +305,40 @@ export async function scanSessionFiles(
     }
   }
 
+  // Codex baseline: ~/.codex/sessions/YYYY/MM/DD/*.jsonl. Read only session_meta
+  // to apply the same cwd scope; message normalization happens in parseSessionFile.
+  const codexRoot = join(getCodexHome(), 'sessions')
+  const safeList = async (path: string): Promise<string[]> => {
+    try { return await readdir(path) } catch { return [] }
+  }
+  for (const year of await safeList(codexRoot)) for (const month of await safeList(join(codexRoot, year))) for (const day of await safeList(join(codexRoot, year, month))) {
+      const dir = join(codexRoot, year, month, day)
+      for (const file of (await safeList(dir)).filter(name => name.endsWith('.jsonl'))) {
+        const filePath = join(dir, file)
+        let fileStat
+        try { fileStat = await stat(filePath) } catch { continue }
+        if (fileStat.mtimeMs < fromMs || fileStat.mtimeMs > toMs) continue
+        let cwd = ''
+        try {
+          const rl = createInterface({ input: createReadStream(filePath, { encoding: 'utf-8' }), crlfDelay: Infinity })
+          for await (const line of rl) {
+            try {
+              const row = JSON.parse(line)
+              if (row.type === 'session_meta') { cwd = row.payload?.cwd ?? ''; break }
+            } catch { /* malformed row */ }
+          }
+          rl.close()
+        } catch { continue }
+        if (!cwd) continue
+        const hash = pathToProjectHash(cwd)
+        if (isExcluded(hash, excludeHashes)) continue
+        const matches = multiPathHashes ? matchesMultiPath(hash, multiPathHashes) : matchesScope(hash, baseHash, scope)
+        if (!matches) continue
+        const match = file.match(/([0-9a-f]{8}-[0-9a-f-]{27,})\.jsonl$/i)
+        results.push({ sessionId: match?.[1] ?? file.replace('.jsonl', ''), path: filePath, mtime: fileStat.mtimeMs, size: fileStat.size, projectHash: hash })
+      }
+  }
+
   // Sort by mtime descending (most recent first)
   results.sort((a, b) => b.mtime - a.mtime)
   return results
@@ -326,7 +365,8 @@ export async function parseSessionFile(
       const trimmed = line.trim()
       if (!trimmed) continue
       try {
-        messages.push(JSON.parse(trimmed) as SessionMessage)
+        const message = normalizeTranscriptRow(JSON.parse(trimmed))
+        if (message) messages.push(message)
         count++
       } catch {
         // Skip malformed lines
@@ -376,8 +416,8 @@ export async function extractPromptsFromFile(
       const trimmed = line.trim()
       if (!trimmed) continue
       try {
-        const obj = JSON.parse(trimmed)
-        if (obj.type !== 'user' || !obj.message) continue
+        const obj = normalizeTranscriptRow(JSON.parse(trimmed))
+        if (obj?.type !== 'user' || !obj.message) continue
         const content = obj.message.content
         let text = ''
         if (typeof content === 'string') text = content
@@ -433,7 +473,8 @@ export async function formatTranscript(filePath: string): Promise<string> {
       const trimmed = line.trim()
       if (!trimmed) continue
       try {
-        const msg = JSON.parse(trimmed) as SessionMessage
+        const msg = normalizeTranscriptRow(JSON.parse(trimmed))
+        if (!msg) continue
         const role = msg.type ?? msg.message?.role
         if (!role) continue
 

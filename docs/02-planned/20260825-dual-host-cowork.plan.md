@@ -523,3 +523,39 @@ The state helper is the enforcement point. Root `clusters` and sprint `owns` are
 | S3-03 | Thin entrypoint and host mappings | parity covers cluster semantics, commits, and native dispatch | P0 |
 | S3-04 | Reference and as-built sync | scheduler is the mechanical authority; preserved Claude behavior remains linked | P1 |
 | S3-05 | Targeted regression and report | prior contract/state suites and new S3 suites pass | P0 |
+
+## S4 Brief, Plan, and Design
+
+### Brief
+
+The remaining four skills, session engine, agents, manifests, and README still assume Claude Code. Codex needs the same six skills and transcript views without treating Goal control envelopes as user dialogue.
+
+Success: both manifests expose one six-skill source; Claude and Codex JSONL normalize into the existing message contract; Goal envelopes remain raw but disappear from prompts, facet transcripts, and commit turns; docs and versions agree. Out of scope: publish, marketplace mutation, install, push, tag, or release.
+
+### Plan
+
+1. Copy the local codex-token-saver `response_item/payload.message` parsing shape into one TypeScript normalizer.
+2. Route scanner, insights formatting, and commit turns through it; discover Codex session files by `session_meta.cwd`.
+3. Add exact goal-envelope filtering and fixtures proving raw input is untouched.
+4. Add the Codex manifest, six-skill parity check, dual-host skill/agent wording, README hook/pain/solution update, and version sync.
+5. Run engine, state, scheduler, runtime, manifest, live discovery, and full regression checks.
+
+### Design
+
+`normalizeTranscriptRow(row)` is the only format seam. Claude rows pass through. Codex `response_item` messages map `input_text/output_text` blocks to the existing `SessionMessage`. A complete user `<codex_internal_context source="goal">...</codex_internal_context>` envelope returns null; embedded discussion of that syntax remains dialogue. Scanners and commit logs consume normalized messages while raw files remain unchanged.
+
+Codex discovery walks `~/.codex/sessions/YYYY/MM/DD`, reads only `session_meta` for cwd scope, then defers full parsing. `.codex-plugin/plugin.json` points to the same `./skills/` directory as the Claude plugin. `scripts/test_product_parity.py` fixes the expected six-skill set and manifest name/version parity.
+
+### Review contracts
+
+- Plan: no second implementation tree, no raw-history mutation, no personal marketplace/install action.
+- Design: exact control-envelope boundary, source-compatible parsing, scanner scope, commit/insights consumption, manifest validity, and regression evidence.
+
+### WorkList
+
+| ID | Work | Evidence |
+|---|---|---|
+| S4-01 | Shared transcript normalizer and Codex discovery | unit tests + live discovery smoke |
+| S4-02 | Goal-control exclusion in insights and commit views | exact/embedded/raw-preservation fixtures |
+| S4-03 | Six shared skills and Codex manifest | parity script + JSON validation |
+| S4-04 | Agent, README, and version sync | diff audit + full regression |

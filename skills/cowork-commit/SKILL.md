@@ -12,6 +12,8 @@ allowed-tools:
 
 You are creating a git commit that includes an **AI collaboration recap** — a record of how the developer collaborated with AI to produce this commit's changes.
 
+Claude Code and Codex histories use one normalized turn contract. Codex goal-control envelopes are never user directives and must not appear in the recap or directive log.
+
 ## Why this skill exists (the lens for every keep/drop decision)
 
 The critical reason to use this skill: **when a different worker (or a future session) later touches this code, they must be able to recover the *intent* behind the previous worker's changes and continue with full context — instead of guessing/inferring it from the diff alone.** Lost intent is the core failure this skill prevents: a buried decision (why a value, why a cap removed, why this approach over the rejected one) that a successor cannot reconstruct becomes silent ambiguity later.

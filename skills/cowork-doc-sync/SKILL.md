@@ -33,10 +33,10 @@ Decisions **span multiple sessions.** Looking at the current session only misses
      → NONE (no marker) = first sync → window = reasonable default (e.g. project start / before HEAD) or confirm with user.
 0-c. Collect the full range since the last sync:
      · Decision/intent drift (not in git, in the conversation):
-         Replay all sessions since last_sync_at via the /continue engine (zero-LLM transcript replay).
+         Replay Claude Code and Codex sessions since last_sync_at via the available continue engine (zero-LLM transcript replay).
          = claude-code-token-saver scripts (list-sessions.js → filter lastMsgTimestamp>last_sync → preprocess.js → read compact.txt).
          Path discovery: ~/.claude/plugins/cache/**/claude-code-token-saver/*/scripts/.
-         If plugin absent, graceful fallback → current session + git diff only.
+         Prefer codex-token-saver's dual-source parser when available. If no replay engine exists, fall back to current session + git diff only.
      · Code drift: git diff <last_sync_commit>..HEAD.
 ```
 

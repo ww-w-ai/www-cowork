@@ -52,6 +52,7 @@ test('isSynthetic: command/bash/hook echoes are synthetic, real text is not', ()
   expect(isSynthetic('<local-command-caveat>Caveat: The messages below')).toBe(true)
   expect(isSynthetic('use TypeScript instead')).toBe(false)
   expect(isSynthetic('Your questions have been answered: "Q"="Yes"')).toBe(false)
+  expect(isSynthetic('<codex_internal_context source="goal">control</codex_internal_context>')).toBe(true)
 })
 
 test('stripSystemTags: removes reminder/hook blocks, keeps real text', () => {

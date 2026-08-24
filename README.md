@@ -1,10 +1,10 @@
 # ai-native-cowork
 
-> **The work-collaboration harness for Claude Code.** Your AI sessions already hold the
+> **The work-collaboration harness for Claude Code and Codex.** Your AI sessions already hold the
 > full story of how the work got done — ai-native-cowork turns that history into shareable
 > reports and per-commit directive logs your whole team can learn from.
 
-You shipped a week of work with Claude. Friday comes — what did you actually do, what
+You shipped a week of work with AI. Friday comes — what did you actually do, what
 worked, and *why* did each commit happen? The transcripts know. Nothing else does.
 
 **ai-native-cowork reads your own session history and gives the answer back** — as a polished
@@ -16,6 +16,7 @@ standup busywork. It runs entirely on data you already have.
 | **`/cowork-insights`** | Narrative HTML + Markdown report of any time range — key prompts verbatim, per-session assessment, tool/token/cost charts. Paste into Jira, Notion, Slack. Weekly/monthly reviews. | ✅ shipped |
 | **`/cowork-commit`** | Two artifacts in one commit: ① `<details>` recap block in the commit message (key decision quotes + metrics) ② directive-log file under `docs/commit-log/` — conversation log first (cause), recap second (result). `--language` option for recap language. Backfill mode documents past commits. | ✅ shipped |
 | **`/cowork-sprint`** | Plan-then-execute sprint orchestrator: you co-plan the whole roadmap, then it runs each sprint through research→plan→design→do→QA→**intent-audit**→deploy autonomously. **Discovers or scaffolds purpose-fit agents** instead of defaulting to `general-purpose` — so every sprint grows your reusable agent roster. | ✅ shipped |
+| **`/pdca-wf`** | One feature, one reviewed lifecycle: Research→Brief→Plan review→Design review→Do→targeted tests→gap check→Report, using native execution on each host. | ✅ shipped |
 | **`/cowork-doc-sync` + `/cowork-doc-init`** | Keep `docs/` aligned to current reality: numbered taxonomy (00-reference…99-misc), LIVING/FROZEN status labels, cross-session drift replay. | ✅ shipped |
 | **www-wiki / taise integration** | When the **www-wiki** vault or **taise** harness is installed, cowork-insights output and directive logs file themselves into your knowledge base. Standalone otherwise. | 🛠 planned |
 
@@ -96,7 +97,7 @@ To hack on the plugin itself, point the marketplace clone's `ai-native-cowork`
 entry at your local checkout, or symlink `skills/` and `agents/` into
 `~/.claude/`.
 
-**Requirements:** [Claude Code](https://claude.ai/claude-code) v2.1.71+ · [Bun](https://bun.sh) (TypeScript engine).
+**Requirements:** Claude Code v2.1.71+ or Codex with plugin support · [Bun](https://bun.sh) for the TypeScript reporting engine.
 
 ## Usage
 

@@ -1,7 +1,7 @@
 ---
 name: cowork-facet-extractor
 description: |
-  Per-session facet extractor for cowork-insights. Reads ONE Claude Code session transcript (.jsonl)
+  Per-session facet extractor for cowork-insights. Reads ONE normalized Claude Code or Codex session transcript
   and writes a structured JSON "facet" (goal / outcome / friction / satisfaction / verbatim key
   prompts / memories) that the report engine aggregates into its qualitative layer. Dispatched in
   parallel — one instance per uncached session — by the cowork-insights skill before it renders the
@@ -32,7 +32,7 @@ If any input is missing, state precisely what you need and stop — do not guess
 
 ## Procedure
 
-1. **Read the FULL transcript.** Large files (1000+ lines, multi-MB) MUST be read in chunks with
+1. **Read the FULL normalized transcript.** Large files (1000+ lines, multi-MB) MUST be read in chunks with
    offset/limit until you have covered every line. Never analyze only the opening — friction,
    corrections, and outcome usually live in the middle and end. (No silent truncation: if a single
    line is too large to read, note it in `frictionDetail`, don't drop the rest of the session.)
