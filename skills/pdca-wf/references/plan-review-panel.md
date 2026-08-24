@@ -2,7 +2,7 @@
 
 Read when running the **plan-review** or **design-review** phase, or when execution hits a
 surprise (OODA). These are two separate independent-review barriers, not one merged step —
-[`../../shared/references/cowork-method.md`](../../shared/references/cowork-method.md) is
+[`../../../shared/references/cowork-method.md`](../../../shared/references/cowork-method.md) is
 explicit: "Do not merge the two reviews."
 
 | Phase | Owner | Question it answers |

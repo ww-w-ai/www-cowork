@@ -7,7 +7,7 @@ Multi-feature delivery uses one host-neutral contract with native execution on C
 
 ## Authority map
 
-- `../../skills/shared/references/cowork-method.md`: roadmap, sprint gates, risk, clusters, convergence, safety, outputs, and Done.
+- `../../shared/references/cowork-method.md`: roadmap, sprint gates, risk, clusters, convergence, safety, outputs, and Done.
 - `../../skills/cowork-sprint/SKILL.md`: thin capability router and public inputs/outputs.
 - `../../skills/cowork-sprint/references/runtime-claude-code.md`: Claude Code mechanisms.
 - `../../skills/cowork-sprint/references/runtime-codex.md`: Codex mechanisms.

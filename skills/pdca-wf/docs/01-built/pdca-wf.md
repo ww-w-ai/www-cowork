@@ -8,7 +8,7 @@ Single-feature PDCA with one shared contract and native execution on Claude Code
 ## Authority map
 
 - `SKILL.md`: capability-based host router and trigger boundary.
-- `../../shared/references/cowork-method.md`: phases, gates, risk, roles, safety, and outputs.
+- `../../../../shared/references/cowork-method.md`: phases, gates, risk, roles, safety, and outputs.
 - `references/runtime-claude-code.md`: TodoWrite, Workflow, and Agent mapping.
 - `references/runtime-codex.md`: update_plan and collaboration mapping; no implicit Goal.
 - `references/plan-review-panel.md`: separate Plan and Design review lenses plus OODA.

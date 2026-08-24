@@ -1,6 +1,6 @@
 # Codex runtime for cowork-sprint
 
-Read [`../../shared/references/cowork-method.md`](../../shared/references/cowork-method.md) first. This file maps its contract to Codex and does not redefine it.
+Read [`../../../shared/references/cowork-method.md`](../../../shared/references/cowork-method.md) first. This file maps its contract to Codex and does not redefine it.
 
 ## Codex capability map
 

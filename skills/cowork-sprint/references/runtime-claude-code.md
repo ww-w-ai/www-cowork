@@ -1,6 +1,6 @@
 # Claude Code runtime for cowork-sprint
 
-Read [`../../shared/references/cowork-method.md`](../../shared/references/cowork-method.md) first. This file maps its contract to Claude Code and does not redefine it.
+Read [`../../../shared/references/cowork-method.md`](../../../shared/references/cowork-method.md) first. This file maps its contract to Claude Code and does not redefine it.
 
 ## Claude capability map
 

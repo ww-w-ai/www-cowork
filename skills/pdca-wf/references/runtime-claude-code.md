@@ -1,6 +1,6 @@
 # Claude Code Runtime for pdca-wf
 
-This file maps the [shared cowork method](../../shared/references/cowork-method.md) to Claude Code. The shared method owns product behavior. This file owns Claude-specific execution mechanics.
+This file maps the [shared cowork method](../../../shared/references/cowork-method.md) to Claude Code. The shared method owns product behavior. This file owns Claude-specific execution mechanics.
 
 The skill's as-built document is [`../docs/01-built/pdca-wf.md`](../docs/01-built/pdca-wf.md).
 

@@ -9,7 +9,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SHARED = ROOT.parent / "shared" / "references" / "cowork-method.md"
+SHARED = ROOT.parents[1] / "shared" / "references" / "cowork-method.md"
 RUNTIMES = {
     "claude": ROOT / "references" / "runtime-claude-code.md",
     "codex": ROOT / "references" / "runtime-codex.md",

@@ -175,7 +175,7 @@ Representative lifecycle fixtures model S2 single-feature completion and S3 roll
 ### Files
 
 ```text
-skills/shared/
+shared/
   references/cowork-method.md
   references/runtime-claude-code.md
   references/runtime-codex.md
@@ -356,7 +356,7 @@ The execution-only return contract is `{artifacts, targetedTests, gapResult, qaD
 
 ### Public entrypoint
 
-`skills/pdca-wf/SKILL.md` becomes a thin host router. It retains the shared name and discriminating description. It reads `../shared/references/cowork-method.md`, then selects:
+`skills/pdca-wf/SKILL.md` becomes a thin host router. It retains the shared name and discriminating description. It reads `../../shared/references/cowork-method.md`, then selects:
 
 ```text
 if update_plan and collaboration tools are available, and Workflow/TodoWrite are not

@@ -19,7 +19,7 @@ Commands:
 - `python3 skills/cowork-sprint/scripts/state/test_state.py` — 19/19 passed.
 - `python3 skills/cowork-sprint/scripts/test_schedule.py` — 4/4 passed.
 - `python3 skills/cowork-sprint/scripts/test_runtime_parity.py` — 2/2 passed.
-- `python3 skills/shared/scripts/test_contract.py` — passed.
+- `python3 shared/scripts/test_contract.py` — passed.
 - `python3 -m json.tool skills/cowork-sprint/references/status.schema.json` — passed.
 - `git diff --check` — passed.
 

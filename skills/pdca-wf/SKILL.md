@@ -9,7 +9,7 @@ Build one feature through the same product contract on Claude Code and Codex.
 
 ## Required method
 
-Read **[`../shared/references/cowork-method.md`](../shared/references/cowork-method.md)** completely before acting. It is authoritative for phases, core gates, risk scoring, dynamic roles, QA diff, safety, and durable outputs.
+Read **[`../../shared/references/cowork-method.md`](../../shared/references/cowork-method.md)** completely before acting. It is authoritative for phases, core gates, risk scoring, dynamic roles, QA diff, safety, and durable outputs.
 
 Then select the runtime from available capabilities:
 

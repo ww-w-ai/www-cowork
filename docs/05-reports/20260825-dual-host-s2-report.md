@@ -18,7 +18,7 @@
 Commands:
 
 - `python3 skills/pdca-wf/scripts/test_runtime_parity.py` — 11/11 passed.
-- `python3 skills/shared/scripts/test_contract.py` — passed.
+- `python3 shared/scripts/test_contract.py` — passed.
 - `python3 skills/cowork-sprint/scripts/state/test_state.py` — 15/15 passed.
 - `git diff --check` — passed.
 

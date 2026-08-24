@@ -10,7 +10,7 @@ import unittest
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 REPO_SKILLS = SKILL_ROOT.parent
 ENTRYPOINT = SKILL_ROOT / "SKILL.md"
-SHARED = REPO_SKILLS / "shared" / "references" / "cowork-method.md"
+SHARED = REPO_SKILLS.parent / "shared" / "references" / "cowork-method.md"
 RUNTIMES = {
     "claude": SKILL_ROOT / "references" / "runtime-claude-code.md",
     "codex": SKILL_ROOT / "references" / "runtime-codex.md",

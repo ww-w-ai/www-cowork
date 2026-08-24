@@ -1,6 +1,6 @@
 # Codex Runtime for `pdca-wf`
 
-Read [the shared cowork method](../../shared/references/cowork-method.md) first. This reference maps that method to Codex capabilities. It does not redefine the shared phases, gates, risk thresholds, outputs, or safety rules.
+Read [the shared cowork method](../../../shared/references/cowork-method.md) first. This reference maps that method to Codex capabilities. It does not redefine the shared phases, gates, risk thresholds, outputs, or safety rules.
 
 ## Runtime boundary
 

@@ -24,7 +24,7 @@ S1 established the host-neutral cowork method, Claude Code and Codex runtime map
 
 ```text
 python3 skills/cowork-sprint/scripts/state/test_state.py
-python3 skills/shared/scripts/test_contract.py
+python3 shared/scripts/test_contract.py
 python3 -m py_compile <state and contract scripts>
 python3 -m json.tool skills/cowork-sprint/references/status.schema.json
 bun test src/commit-log.test.ts

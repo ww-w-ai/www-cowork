@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SHARED = ROOT / "shared" / "references" / "cowork-method.md"
 CLAUDE = ROOT / "shared" / "references" / "runtime-claude-code.md"
 CODEX = ROOT / "shared" / "references" / "runtime-codex.md"
-ENTRYPOINTS = (ROOT / "cowork-sprint" / "SKILL.md", ROOT / "pdca-wf" / "SKILL.md")
+ENTRYPOINTS = (ROOT / "skills" / "cowork-sprint" / "SKILL.md", ROOT / "skills" / "pdca-wf" / "SKILL.md")
 
 
 def require(condition: bool, message: str) -> None:
@@ -50,7 +50,7 @@ def main() -> int:
 
     for entrypoint in ENTRYPOINTS:
         text = entrypoint.read_text(encoding="utf-8")
-        require("../shared/references/cowork-method.md" in text, f"{entrypoint} lacks shared contract link")
+        require("../../shared/references/cowork-method.md" in text, f"{entrypoint} lacks shared contract link")
         require("runtime-claude-code.md" in text and "runtime-codex.md" in text, f"{entrypoint} lacks runtime links")
         normalized = " ".join(text.replace("*", "").split())
         require("what is here that no WorkList item asked for?" in normalized, f"{entrypoint} lost QA diff question")

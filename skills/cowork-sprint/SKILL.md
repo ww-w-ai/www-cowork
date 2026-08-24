@@ -10,7 +10,7 @@ Deliver one multi-feature roadmap through the same observable contract on Claude
 
 ## Required method
 
-Read [`../shared/references/cowork-method.md`](../shared/references/cowork-method.md) completely. It owns roadmap planning, sprint phases, core and risk gates, cluster rules, bounded convergence, safety, outputs, and Done.
+Read [`../../shared/references/cowork-method.md`](../../shared/references/cowork-method.md) completely. It owns roadmap planning, sprint phases, core and risk gates, cluster rules, bounded convergence, safety, outputs, and Done.
 
 Then select the runtime from available capabilities:
 
