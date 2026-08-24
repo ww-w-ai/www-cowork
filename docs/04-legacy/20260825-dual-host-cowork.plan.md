@@ -1,10 +1,11 @@
+> Status: FROZEN — completed process artifact. Current truth: [`../01-built/cowork-sprint.md`](../01-built/cowork-sprint.md).
+
 # Dual-host cowork roadmap
 
-Status: FROZEN — COMPLETE
 Date: 2026-08-25
 Branch: `sprint/dual-host`
 
-Completion commits: `7bb23ba`, `bfa749e`, `6a83fed`, `1c1e9c6`, plus the final parity/doc-close commit. Retained at this path because durable state records it as `roadmapFile`.
+Completion commits: `7bb23ba`, `bfa749e`, `6a83fed`, `1c1e9c6`, plus the final parity/doc-close commits. This roadmap is preserved as execution history; it no longer governs current work.
 
 ## Goal
 

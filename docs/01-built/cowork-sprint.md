@@ -24,3 +24,9 @@ Multi-feature delivery uses one host-neutral contract with native execution on C
 - State contains resume facts only. QA tables, resolved decisions, gap detail, and agent evolution belong in Plan or Report artifacts.
 - Transcript consumers expose an explicit raw view for audit while user-dialogue views filter Codex Goal control envelopes.
 - External or irreversible actions always require explicit user approval.
+
+## Packaging and distribution
+
+- Claude Code loads `.claude-plugin/plugin.json` through the `ww-w-ai` Marketplace.
+- Codex loads `.codex-plugin/plugin.json` and the same six-skill tree through a Codex Marketplace snapshot.
+- The local personal Codex Marketplace is the verified development channel. A public Codex Marketplace must package the plugin under its own `plugins/ai-native-cowork` source path; the Claude Marketplace manifest is not interchangeable.

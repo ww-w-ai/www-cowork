@@ -15,8 +15,25 @@ assert {claude["name"], codex["name"], legacy["name"]} == {"ai-native-cowork"}
 assert len({claude["version"], codex["version"], legacy["version"]}) == 1
 assert codex["skills"] == "./skills/"
 
+codex_readmes = [
+    ROOT / "README-CODEX.md",
+    ROOT / "README-CODEX.ko.md",
+    ROOT / "README-CODEX.ja.md",
+    ROOT / "README-CODEX.zh-CN.md",
+]
+required_commands = {
+    "codex plugin marketplace add ww-w-ai/marketplace",
+    "codex plugin add ai-native-cowork@ww-w-ai",
+    "codex plugin marketplace upgrade ww-w-ai",
+    "codex plugin list",
+}
+for readme in codex_readmes:
+    text = readme.read_text()
+    missing = required_commands - set(text.splitlines())
+    assert not missing, f"Codex README command drift in {readme.name}: {sorted(missing)}"
+
 for name in EXPECTED:
     text = (ROOT / "skills" / name / "SKILL.md").read_text()
     assert text.startswith("---\n"), f"missing frontmatter: {name}"
 
-print("six-skill and manifest parity passed")
+print("six-skill, manifest, and Codex README parity passed")

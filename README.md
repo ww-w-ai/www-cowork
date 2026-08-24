@@ -1,5 +1,7 @@
 # ai-native-cowork
 
+> Using Codex? See the dedicated [Codex installation and usage guide](./README-CODEX.md).
+
 > **The work-collaboration harness for Claude Code and Codex.** Your AI sessions already hold the
 > full story of how the work got done — ai-native-cowork turns that history into shareable
 > reports and per-commit directive logs your whole team can learn from.
@@ -50,7 +52,9 @@ just the literal plan) and grows the rest alongside you.
 
 ## Install
 
-**Via ww-w-ai marketplace (recommended):**
+### Claude Code
+
+**Via ww-w-ai Marketplace (recommended):**
 
 Run these two slash commands in Claude Code — one after the other:
 
@@ -78,6 +82,17 @@ That's it. (`@ww-w-ai` disambiguates if you have multiple marketplaces; `/plugin
 ```
 
 Restart Claude Code — the plugin downloads automatically.
+
+### Codex
+
+Codex uses its own Marketplace schema and CLI:
+
+```bash
+codex plugin marketplace add ww-w-ai/marketplace
+codex plugin add ai-native-cowork@ww-w-ai
+```
+
+See [README-CODEX.md](./README-CODEX.md) for updates, verification, Codex-specific behavior, and local development.
 
 **Local checkout (development):**
 
@@ -242,7 +257,8 @@ Ambiguous or important-but-reversible calls are made with a sensible default and
 
 ```
 ai-native-cowork/
-├── .claude-plugin/plugin.json   # Plugin manifest
+├── .claude-plugin/plugin.json   # Claude Code plugin manifest
+├── .codex-plugin/plugin.json    # Codex plugin manifest
 ├── manifest.json
 ├── skills/
 │   ├── cowork-insights/SKILL.md     # /cowork-insights — narrative report pipeline

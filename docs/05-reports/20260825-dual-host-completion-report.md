@@ -1,3 +1,5 @@
+> Status: FROZEN — point-in-time completion evidence.
+
 # Dual-host ai-native-cowork completion report
 
 ## Result
@@ -37,8 +39,8 @@ Shared contracts live at root `shared/`, outside Codex's discoverable `skills/` 
 Transcript parsing exposes `{raw, messages}` from one read: raw rows retain Codex Goal envelopes for audit, while insights, facets, and commit directives consume the filtered dialogue view.
 The exported last-five helper slices the same normalized prompt view, preserving chronological real requests while excluding Goal control.
 
-No push, publish, tag, release, install, marketplace mutation, or production action occurred. The original main worktree contains user-owned TRIM changes, so this verified branch was deliberately not merged or cleaned up.
+At this report's verification point, no push, publish, tag, release, install, marketplace mutation, or production action had occurred. The original main worktree contained user-owned TRIM changes, so validation remained in the isolated worktree.
 
 ## Residual
 
-None within the requested product scope. The branch remains `sprint/dual-host` for user-directed integration.
+None within the implementation scope. Publication state is verified separately during release.
