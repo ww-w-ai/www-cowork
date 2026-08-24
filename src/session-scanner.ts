@@ -348,10 +348,14 @@ export async function scanSessionFiles(
 // JSONL Parsing
 // ============================================================================
 
-export async function parseSessionFile(
+export type SessionViews = { raw: unknown[]; messages: SessionMessage[] }
+
+/** Read once and expose both immutable raw rows and the filtered dialogue view. */
+export async function parseSessionViews(
   filePath: string,
   maxLines?: number,
-): Promise<SessionMessage[]> {
+): Promise<SessionViews> {
+  const raw: unknown[] = []
   const messages: SessionMessage[] = []
   const limit = maxLines ?? Infinity
   let count = 0
@@ -365,7 +369,9 @@ export async function parseSessionFile(
       const trimmed = line.trim()
       if (!trimmed) continue
       try {
-        const message = normalizeTranscriptRow(JSON.parse(trimmed))
+        const row = JSON.parse(trimmed)
+        raw.push(row)
+        const message = normalizeTranscriptRow(row)
         if (message) messages.push(message)
         count++
       } catch {
@@ -377,7 +383,14 @@ export async function parseSessionFile(
     stream.destroy()
   }
 
-  return messages
+  return { raw, messages }
+}
+
+export async function parseSessionFile(
+  filePath: string,
+  maxLines?: number,
+): Promise<SessionMessage[]> {
+  return (await parseSessionViews(filePath, maxLines)).messages
 }
 
 export function getSessionTimestamps(
@@ -440,6 +453,14 @@ export async function extractPromptsFromFile(
   }
 
   return prompts
+}
+
+export async function extractLastUserMessagesFromFile(
+  filePath: string,
+  limit = 5,
+): Promise<Array<{ text: string; timestamp: string; index: number }>> {
+  if (!Number.isInteger(limit) || limit < 1) throw new Error('limit must be a positive integer')
+  return (await extractPromptsFromFile(filePath)).slice(-limit)
 }
 
 // ============================================================================

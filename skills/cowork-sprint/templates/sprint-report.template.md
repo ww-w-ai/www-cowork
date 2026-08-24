@@ -13,7 +13,7 @@
 
 Defects caught by adversarial review and fixed before commit: {n} — {one-line list, or "none" if none}
 
-## 2. QA coverage table (consolidated from sprints[].qaTable)
+## 2. QA coverage table (consolidated from sprint reports)
 
 <!-- RULE: One row per shipped feature/behavior. An unchecked row with no stated reason means the QA gate should have FAILed. -->
 
@@ -42,8 +42,8 @@ Summary: checked {n} / deferred {n} / total {n}
 
 ## 5. Deferred decisions — things postponed during execution instead of stopping
 
-<!-- RULE: Copy status.json deferredDecisions[] verbatim. A list of decisions that were ambiguous or
-     important but not irreversible, resolved with a reasonable default without stopping execution —
+<!-- RULE: Copy deferred decisions recorded in Plan/Check artifacts. These are decisions that were
+     ambiguous or important but not irreversible, resolved with a reasonable default without stopping execution —
      for the user to review and possibly reverse.
      (Distinct from the irreversible-action gates above — those belong in §3 Pending gates.) -->
 

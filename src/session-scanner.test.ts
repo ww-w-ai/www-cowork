@@ -2,7 +2,7 @@ import { afterEach, expect, test } from 'bun:test'
 import { mkdir, mkdtemp, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { scanSessionFiles } from './session-scanner.js'
+import { extractLastUserMessagesFromFile, parseSessionViews, scanSessionFiles } from './session-scanner.js'
 
 let root = ''
 const oldCodex = process.env.CODEX_HOME
@@ -40,4 +40,31 @@ test('Codex discovery scopes by cwd and survives malformed tree entries', async 
     '11111111-1111-1111-1111-111111111111',
     '22222222-2222-2222-2222-222222222222',
   ])
+})
+
+test('raw view preserves a Goal envelope while dialogue view filters it', async () => {
+  root = await mkdtemp(join(tmpdir(), 'cowork-views-'))
+  const path = join(root, 'session.jsonl')
+  const goal = '<codex_internal_context source="goal">control</codex_internal_context>'
+  const rows = [
+    { type: 'response_item', timestamp: 't1', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: goal }] } },
+    { type: 'response_item', timestamp: 't2', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: 'real request' }] } },
+  ]
+  await writeFile(path, rows.map(JSON.stringify).join('\n'))
+  const views = await parseSessionViews(path)
+  expect((views.raw[0] as any).payload.content[0].text).toBe(goal)
+  expect(JSON.stringify(views.messages)).not.toContain(goal)
+  expect(JSON.stringify(views.messages)).toContain('real request')
+})
+
+test('last-five view excludes Goal control and stays chronological', async () => {
+  root = await mkdtemp(join(tmpdir(), 'cowork-last-five-'))
+  const path = join(root, 'session.jsonl')
+  const goal = '<codex_internal_context source="goal">control</codex_internal_context>'
+  const texts = ['one', goal, 'two', 'three', 'four', 'five', 'six']
+  const rows = texts.map((text, index) => ({
+    type: 'response_item', timestamp: `t${index}`, payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text }] },
+  }))
+  await writeFile(path, rows.map(JSON.stringify).join('\n'))
+  expect((await extractLastUserMessagesFromFile(path)).map(item => item.text)).toEqual(['two', 'three', 'four', 'five', 'six'])
 })

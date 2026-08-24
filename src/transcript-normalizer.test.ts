@@ -15,9 +15,3 @@ test('normalizes Codex user and assistant message blocks', () => {
   expect(user).toEqual({ type: 'user', timestamp: 't', message: { role: 'user', content: [{ type: 'text', text: 'hello' }] } })
   expect(assistant?.type).toBe('assistant')
 })
-
-test('preserves raw history by not mutating the source row', () => {
-  const row = { type: 'response_item', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: goal }] } }
-  normalizeTranscriptRow(row)
-  expect(row.payload.content[0]!.text).toBe(goal)
-})

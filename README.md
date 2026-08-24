@@ -232,7 +232,7 @@ flowchart TD
   T1 -- yes --> DEC["Decide &amp; continue<br/>(logged)"]
   T1 -- no --> T2{"One option<br/>obviously better?"}
   T2 -- yes --> DEC
-  T2 -- no --> DEF["Take a sensible default,<br/>keep going,<br/>record to deferredDecisions[]"]
+  T2 -- no --> DEF["Take a sensible default,<br/>keep going,<br/>record in the report"]
   DEF --> BATCH["Present the whole batch<br/>at the END for your<br/>review / override"]
 ```
 

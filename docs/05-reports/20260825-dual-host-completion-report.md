@@ -15,7 +15,7 @@ One `ai-native-cowork` source now serves Claude Code and Codex with the same six
 
 ## Final verification
 
-- Bun: 19/19 tests passed.
+- Bun: 20/20 tests passed.
 - `pdca-wf`: 11/11 runtime parity tests passed.
 - `cowork-sprint`: 19/19 state, 4/4 scheduler, and 7/7 behavioral parity tests passed.
 - Shared contract and six-skill/manifest parity passed.
@@ -27,6 +27,9 @@ One `ai-native-cowork` source now serves Claude Code and Codex with the same six
 ## Intent and safety audit
 
 The final correction promotes all host-neutral gates into the shared method, makes `cowork-sprint` a thin router, gives both host runtimes the same executable lifecycle table, validates the documented state example with the real state helper, and mutation-tests removal of a real gate row.
+
+Transcript parsing exposes `{raw, messages}` from one read: raw rows retain Codex Goal envelopes for audit, while insights, facets, and commit directives consume the filtered dialogue view.
+The exported last-five helper slices the same normalized prompt view, preserving chronological real requests while excluding Goal control.
 
 No push, publish, tag, release, install, marketplace mutation, or production action occurred. The original main worktree contains user-owned TRIM changes, so this verified branch was deliberately not merged or cleaned up.
 

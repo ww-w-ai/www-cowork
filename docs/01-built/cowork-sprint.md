@@ -22,4 +22,5 @@ Multi-feature delivery uses one host-neutral contract with native execution on C
 - Only the first unfinished cluster may run. Concurrent members have disjoint ownership and stable integration order.
 - Every sprint has targeted tests, gap evidence, intent PASS, its own commit, and a post-commit checkpoint.
 - State contains resume facts only. QA tables, resolved decisions, gap detail, and agent evolution belong in Plan or Report artifacts.
+- Transcript consumers expose an explicit raw view for audit while user-dialogue views filter Codex Goal control envelopes.
 - External or irreversible actions always require explicit user approval.

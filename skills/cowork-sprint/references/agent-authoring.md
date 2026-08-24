@@ -122,7 +122,7 @@ Per owned agent, max 2 evolution rounds per sprint (EVOLVE_CAP). Then escalate, 
    If the role keeps failing across rounds, it is MIS-SCOPED → SPLIT into two focused agents
    (and re-assign the chunks), do not inflate one agent.
 4. RE-DISPATCH the same chunk (or the next same-role chunk) with the evolved agent.
-5. RECORD in status.json → agentEvolutions[]{ name, round, reason, wordCount } (audit trail + proof
+5. RECORD in the sprint report → agent evolution `{name, round, reason, wordCount}` (audit trail + proof
    the cap held). The evolved .md persists = compounding roster quality across sprints.
 6. After EVOLVE_CAP rounds still failing the predicate → AUTO-PAUSE (AGENT_EVOLUTION_EXHAUSTED) and
    report: the role is likely wrong-scoped or the task needs human input. Never emit a false "done".
