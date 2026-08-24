@@ -96,8 +96,8 @@ the premise loses.
 | mechanical failure (typo, missing dep, flaky env) | adjust-in-plan | keep running |
 | same failure 3× or 10+ tool calls with no progress | re-plan that slice → re-run only the affected lenses | keep running |
 | a premise the design rested on is false | re-plan that slice; other slices keep running | keep running |
-| real work outside this sprint's goal | defer to `deferredDecisions[]` | keep running — never widen scope mid-run |
-| genuine toss-up with no derivable answer | commit an anchor, pick one, log to `deferredDecisions[]` | keep running |
+| real work outside this sprint's goal | record as report carry | keep running — never widen scope mid-run |
+| genuine toss-up with no derivable answer | choose a reversible default; use `openDecisions` only if it must survive resume | keep running |
 | the surprise makes an irreversible action look wrong | escalate | **stop at the safety gate, report** |
 
 Only the last row stops the run. Everything else is handled and logged — the autonomous contract

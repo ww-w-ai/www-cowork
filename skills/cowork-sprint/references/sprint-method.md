@@ -197,56 +197,29 @@ completion and commits before later starts.
 
 ```json
 {
-  "goal": "string — the overall roadmap objective",
-  "executionMode": "sequential | mixed | concurrent",
-  "sprints": [
-    {
-      "id": "sprint-1",
-      "name": "string",
-      "planFile": "docs/.../sprint-1.plan.md",
-      "deps": ["sprint-0"],
-      "agents": ["role-a", "role-b"],
-      "cyclePhase": "research | plan-detail | design | do | qa | fix | intent-audit | commit | deploy | done",
-      "status": "pending | in-progress | blocked | completed | failed | archived",
-      "pattern": "delegate | inline | workflow | mixed",
-      "matchRate": null,
-      "gapItems": [],
-      "prdRef": null,
-      "retries": 0,
-      "startedAt": "ISO8601",
-      "completedAt": null
-    }
-  ],
-  "executionOrder": ["sprint-1", "sprint-2"],
-  "agentEvolutions": [
-    {
-      "name": "role-a",
-      "round": 1,
-      "reason": "string — the DEFINITION defect fixed (e.g. 'output-format too loose; pinned required fields')",
-      "wordCount": 740,
-      "sprint": "sprint-1",
-      "at": "ISO8601"
-    }
-  ],
-  "deferredDecisions": [
-    {
-      "id": "dd-1",
-      "sprint": "sprint-1",
-      "cyclePhase": "design",
-      "question": "string — the ambiguous/important decision skipped mid-run",
-      "chosenDefault": "string — the reasonable default taken to keep moving (or 'skipped')",
-      "reason": "string — why deferred (ambiguous / important-not-irreversible), not decided",
-      "reversible": true
-    }
-  ],
-  "startedAt": "ISO8601"
+  "schemaVersion": 1,
+  "revision": 0,
+  "runId": "roadmap-id",
+  "goal": "overall objective",
+  "roadmapFile": "docs/02-planned/roadmap.md",
+  "executionMode": "mixed",
+  "git": {"baseBranch":"main","worktree":".worktrees/run","sprintBranch":"sprint/run","lastCommit":null},
+  "sprints": [{
+    "id":"S1","deps":[],"owns":["src/feature"],"planFile":"docs/02-planned/s1.md",
+    "risk":{"impact":1,"recovery":1,"securityExternal":0,"contract":1,"verification":1,"total":4},
+    "status":"pending","phase":"pending","commit":null
+  }],
+  "clusters": [{"id":"C1","mode":"sequential","sprintIds":["S1"],"integrationOrder":["S1"]}],
+  "pause": null,
+  "openDecisions": [],
+  "updatedAt": "2026-08-25T00:00:00Z"
 }
 ```
 
-- `matchRate` — the **measured** value from gap-analysis (§5 QA Axis 2), not a target.
-- `deferredDecisions[]` — mid-run ambiguous/important decisions the Leader did NOT stop for (3-tier autonomy rule, SKILL.md PHASE 1): each records the default taken + why, surfaced as a batch in the final report for the user to review/override. Empty when the run had none. **This is the decision axis (defer + keep going); it is NOT the irreversible-safety gate (which still pauses mid-run).**
-- `gapItems[]` — `[{ id, status, note }]` (`status` ∈ done|partial|missing|divergent) from the last gap-analysis run; enables resume + report without recompute.
-- `prdRef` — path to the PRD-lite for this sprint (null when skipped per §6A knob #2).
+Only fields accepted by `status.schema.json` belong in state. QA tables, match rates, gap items,
+resolved or deferred decisions, agent-evolution history, PRD detail, retry narratives, and timestamps
+beyond `updatedAt` belong in Plan or Report artifacts. `openDecisions` contains only unresolved
+decision resume facts. Use the state helper for all mutations; never hand-edit lifecycle state.
 
 ## 6A. Local project config (generic default + override)
 
@@ -294,20 +267,19 @@ artifact/behavior that proves the item done — REQUIRED, because gap-analysis
 item with no evidence is unmeasurable. `priority` enables knob #4 weighting.
 Promote to `templates/worklist.template.md` only if this shape recurs.
 
-- `agentEvolutions[]` — audit trail for the self-evolution loop (SKILL.md *Dynamic local agents* + agent-authoring.md § Self-evolution). One entry per refinement of an **owned** scaffolded agent. `wordCount` proves the ≤1500-word cap held. Cap **2** rounds/agent/sprint, then `AGENT_EVOLUTION_EXHAUSTED`.
-
 ### Update timings (record on completion, not batched)
 
 | When | Update |
 |---|---|
-| PHASE 0 done | create file, sprints[] with `pending`, `executionOrder`, `executionMode` |
-| Sprint starts | that sprint `in-progress`, `startedAt`, `cyclePhase` advances live |
-| Cycle phase completes | bump `cyclePhase`; record `pattern`, `matchRate` when QA runs |
-| Agent evolved | append `agentEvolutions[]{name, round, reason, wordCount, sprint, at}` |
-| Sprint deploy/deliver done | `status=completed`, `completedAt` |
+| Roadmap planning done | initialize schema-valid sprints, clusters, git, and executionMode |
+| Sprint starts | `start-sprint` records `in-progress/research` |
+| Cycle phase completes | `set-phase` advances one canonical phase |
+| Decision must survive resume | add one unresolved `openDecisions` entry |
+| Sprint verification done | set phase `commit`, then record the real commit |
+| Sprint delivery done | `complete-sprint` records `completed/done` and optional resultFile |
 | Archived (optional) | `status=archived` |
-| Failure | `status` set, `retries++`, surface cause |
+| Failure or pause | use the matching helper command; detailed cause stays in the report |
 
 ## 7. Resume
 
-Read status.json → first sprint whose `status` ∉ {completed, archived, failed} → resume from its `cyclePhase` → skip completed sprints. Respect `executionOrder` / `deps` (don't start a sprint whose deps aren't done).
+Validate status.json and its revision, then resume the first unfinished cluster at its stored canonical phase. Skip completed and archived-done members. A failed or blocked member prevents later-cluster admission. Respect `clusters`, `integrationOrder`, and `deps`; transcript history is recovery evidence, not state authority.

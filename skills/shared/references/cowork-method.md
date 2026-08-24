@@ -24,6 +24,20 @@ Immediately before each sprint, complete this sequence:
 
 Plan review asks whether the right work is planned. Design review asks whether that plan can be implemented and verified as described. Do not merge the two reviews.
 
+## Roadmap and cluster contract
+
+At roadmap start, write an intent anchor, coarse sprint list, dependency graph, ownership keys, and approximate Done criteria. Detail only the active sprint. Run an independent roadmap review for completeness, sizing, sequencing, scope, and dominant risk before execution.
+
+Use the deterministic scheduler to classify the roadmap:
+
+- a dependency always places the dependent sprint in a later cluster;
+- equal or ancestor/descendant path ownership serializes sprints;
+- unknown ownership serializes the sprint;
+- independent, disjoint sprints may share a concurrent cluster;
+- `integrationOrder` is stable roadmap order.
+
+Only the first unfinished cluster may run. Every member of every earlier cluster must be completed or archived-done with a commit. A blocked or failed member prevents cluster advance. Concurrent work uses flat workers with explicit ownership; the leader integrates in stored order and runs adjacent regression before advancing.
+
 ## Core gates
 
 Every sprint runs these gates regardless of risk score:
@@ -33,12 +47,28 @@ Every sprint runs these gates regardless of risk score:
 - Design and independent Design review are complete.
 - Targeted tests execute against changed behavior.
 - WorkList-to-implementation gap check is complete.
+- A fresh-context intent audit confirms the result serves the sprint intent.
+- The QA diff question resolves unrequested work.
 - The sprint has its own commit.
 - The durable checkpoint is updated after the commit.
 
 Every roadmap ends with full regression, final intent review, documentation synchronization, a completion report, and retrospective when the run produced reusable learning or material correction.
 
 Tests do not replace the gap check. Tests ask whether implemented behavior works. The gap check asks whether every promised item exists.
+
+## Convergence and failure direction
+
+Check/Act is bounded to five fix-and-recheck iterations. Each iteration records real command exit codes, WorkList coverage, current gaps, and the affected re-review lenses. Engineering work reaches Done only at complete WorkList coverage with no blocker or major gap and green applicable checks. Non-code work uses its reviewed verifiable predicate.
+
+Mechanical failure stays within the reviewed Design. A false premise returns only the affected slice to Plan or Design and re-runs invalidated lenses. Work outside Success becomes an explicit carry item. Exhausted iterations, unresolved quality failure, unsafe irreversible action, or merge conflict pauses truthfully; none may be relabeled Done.
+
+## Intent, documentation, and close
+
+The executor cannot perform the independent intent audit. Give a fresh reviewer the intent anchor, artifacts, and gap result. A REVISE verdict returns to bounded Check/Act.
+
+Every roadmap closes with integrated full regression, final intent review, documentation synchronization, a completion report, and a retrospective when the run produced reusable learning or material correction. If the run created an isolated worktree and the target worktree is safe to update, a verified local merge may follow; conflicts stop, and remote push always requires explicit approval.
+
+Roadmap Done requires every sprint completed with its own commit and checkpoint, final regression green, intent audit PASS, documentation synchronized, and no unresolved blocker or major gap. A report, test count, or state label cannot substitute for this predicate.
 
 ## Risk score and added gates
 
