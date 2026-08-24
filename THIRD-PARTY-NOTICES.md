@@ -84,3 +84,18 @@ Modifications from the original (Apache-2.0 §4 "stating changes"):
   (G-BUILD/G-CONTRACT/G-MATCH/G-CRIT/G-MIGRATE/G-INTENT/G-DOCSYNC).
 - Added an audit formatter and a standalone CLI (`cli.mjs`).
 - The bkit sprint FSM, phase enforcement, and Stop-hook are NOT included.
+
+### Additional adaptation — cowork-sprint durable state
+
+`skills/cowork-sprint/scripts/state/state.py` adapts the atomic temporary-file
+plus rename persistence pattern and the declarative state-transition approach
+from bkit commit `eec224f3911ad1484295b7837ca88fd013eb540d`
+(`v2.1.38-2-geec224f`), specifically
+`lib/infra/sprint/sprint-state-store.adapter.js` and
+`lib/pdca/state-transitions.js` (Apache-2.0).
+
+The cowork implementation is a new, smaller Python state machine. It replaces
+bkit's PDCA states, events, guards, actions, indexes, and `.bkit/` storage with
+the dual-host cowork schema, optimistic revisions, explicit sprint commands,
+semantic validation, and one atomic `status.json` file. No bkit parsing,
+validation, compatibility, or transition table was copied verbatim.

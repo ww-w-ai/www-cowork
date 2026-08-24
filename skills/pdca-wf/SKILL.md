@@ -5,6 +5,10 @@ description: USE for ANY single-feature build request — the default engine whe
 
 # pdca-wf — PDCA as a native Workflow execution engine
 
+## Shared contract and runtime
+
+The cross-host method is authoritative: **`../shared/references/cowork-method.md`**. Read it before execution. On Claude Code, also read **`../shared/references/runtime-claude-code.md`**. A Codex distribution reads **`../shared/references/runtime-codex.md`** instead. This entrypoint retains existing Claude execution mechanics until the dual-host adapter work is complete; host mechanics must preserve the shared phases, core gates, risk policy, dynamic-role contract, and outputs.
+
 ## One-line maxim
 
 **Judgment (Plan·Design) stays in main with thinking; structured/bulk/parallel execution (Research·Do·Check) runs as Workflow scripts that drive to 100 — only the irreversible launch is gated back to main.**
@@ -89,7 +93,8 @@ Create a TodoWrite todo per phase. Mark `in_progress` on entry, `completed` only
 - Lenses = perspective-diverse verify (correctness / regression / design-fit) vs the design doc; gaps fixed with `parallel()`, loop until 100 or max 5.
 - Main re-stamps `date` and writes `05-reports/<dt2>-<feature>-check.md` (Check skeleton in `references/doc-templates.md`; snapshot uses its OWN datetime, not Phase-0 `<dt>`).
 - **Quality gate = NO BRANCH**: do not pause on matchRate<100. If max 5 exhausted < 100 → carry residualGaps to Report. Do not stop.
-- Exit: GapResult returned (100 or residual recorded).
+- **QA diff check:** after gap analysis, inspect the diff once and ask *what is here that no WorkList item asked for?* Cut speculative generality or gold plating when a smaller implementation satisfies the reviewed Design. Keep contracts, boundaries, security controls, failure direction, and explicitly justified extensibility. Record material cuts or one-line keep reasons. This is a concise QA question, not a separate agent or review phase.
+- Exit: GapResult returned (100 or residual recorded) and the QA diff question is answered.
 
 ### Phase 6 — Report + lifecycle (main)
 - Re-stamp `date` → `<dt3>`. Write `05-reports/<dt3>-<feature>-report.md` — fill the Report skeleton in `references/doc-templates.md` (incl. QA table + anticipated questions; phaseHistory passed through from Check's returned `iterations`/`testsRun`, NOT LLM-reconstructed).

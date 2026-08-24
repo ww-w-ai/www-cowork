@@ -24,6 +24,10 @@ effort: max
 > Composite orchestrator skill — exempt from single-responsibility and minimum-tool rules.
 > Runs in the **Main Session** as the embodied team **Leader**. One entry (`/cowork-sprint`) covers planning → execution; phases are internal stages, never user-issued sub-commands.
 
+## Shared contract and runtime
+
+The cross-host method is authoritative: **`../shared/references/cowork-method.md`**. Read it before planning or execution. On Claude Code, also read **`../shared/references/runtime-claude-code.md`**. A Codex distribution reads **`../shared/references/runtime-codex.md`** instead. This entrypoint retains existing Claude orchestration details until the host adapters are completed; it must not diverge from the shared core gates, risk policy, dynamic-role contract, or outputs.
+
 ## Mental model — a real delivery team
 
 ```
@@ -256,6 +260,11 @@ independent clusters dispatched concurrently):
       Mechanical baseline = **detect the stack, run ITS tools** (format-check+lint+type/compile+test;
       tooling differs by language — JS/TS tsc+eslint, Python ruff+mypy+pytest, Go vet+test, …; run only
       what the project has). Engineering target = baseline green + matchRate **100%**, cap **5** fix-rounds.
+    · QA diff check: after Axis-2 gap analysis, inspect the sprint diff once and ask *what is here that
+      no WorkList item asked for?* Cut speculative generality or gold plating when a smaller
+      implementation satisfies the reviewed Design. Keep contracts, boundaries, security controls,
+      failure direction, and explicitly justified extensibility. Record material cuts or one-line keep
+      reasons in the sprint report. This is a concise QA question, not a separate agent or review phase.
       Plus a **ship-hygiene mechanical scan** (full set at sprint; cheap subset per-commit) — secrets/keys,
       conflict markers, abs-paths/host·port, manifest/config validity, packaging hygiene → §5.
       3-part predicate contract (end-state + executed check + reward-hack invariants) → references/sprint-method.md §5b.
