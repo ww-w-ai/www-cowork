@@ -6,7 +6,7 @@ All execution-phase Workflow scripts MUST return schema-validated JSON via `agen
 
 **Sandbox note:** scripts have no `fs` — they cannot read this file at runtime. **Main inlines the real schema object into the script string** before `Workflow({script})`. The templates' `{ /* ... */ }` placeholders are where main pastes these.
 
-## ResearchFindings (Phase 1)
+## ResearchFindings (research phase)
 
 ```json
 {
@@ -30,7 +30,37 @@ All execution-phase Workflow scripts MUST return schema-validated JSON via `agen
 }
 ```
 
-## WorkList (Phase 3, produced by MAIN, consumed by Do)
+## ReviewResult (plan-review and design-review phases — shared schema)
+
+Both independent reviews return the same shape (`references/plan-review-panel.md` owns lens
+selection and the exit gate; this is the wire contract). One agent call per lens; main merges
+the array of per-lens `ReviewResult` objects before applying the exit gate.
+
+```json
+{
+  "type": "object",
+  "required": ["verdict", "findings"],
+  "properties": {
+    "verdict": { "type": "string", "enum": ["GO", "FIX-FIRST"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "claim", "where", "whyItSinks", "fix"],
+        "properties": {
+          "severity":    { "type": "string", "enum": ["BLOCKER", "MAJOR", "MINOR"] },
+          "claim":       { "type": "string", "maxLength": 300 },
+          "where":       { "type": "string", "description": "plan/design section or WorkList item id" },
+          "whyItSinks":  { "type": "string", "maxLength": 300 },
+          "fix":         { "type": "string", "maxLength": 300 }
+        }
+      }
+    }
+  }
+}
+```
+
+## WorkList (design phase, produced by MAIN, consumed by Do)
 
 ```json
 {
@@ -59,7 +89,7 @@ All execution-phase Workflow scripts MUST return schema-validated JSON via `agen
 }
 ```
 
-## agentMap (Phase 3, produced by MAIN, consumed by Do/Check)
+## agentMap (design phase, produced by MAIN, consumed by Do/Check)
 
 ```json
 {
@@ -70,9 +100,9 @@ All execution-phase Workflow scripts MUST return schema-validated JSON via `agen
 }
 ```
 
-`verifyCmd` (Phase 3, consumed by Check) is a plain string (e.g. `"npm test && npm run lint && tsc --noEmit"`) or `null` for non-verifiable work — not a schema'd agent return.
+`verifyCmd` (design phase, consumed by targeted-test/gap-check) is a plain string (e.g. `"npm test && npm run lint && tsc --noEmit"`) or `null` for non-verifiable work — not a schema'd agent return.
 
-## GapResult (Phase 5)
+## GapResult (gap-check phase)
 
 ```json
 {
@@ -97,7 +127,7 @@ All execution-phase Workflow scripts MUST return schema-validated JSON via `agen
 }
 ```
 
-## Report (Phase 6)
+## Report (report phase)
 
 ```json
 {

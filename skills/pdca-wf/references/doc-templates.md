@@ -2,12 +2,19 @@
 
 Fixed skeletons for every md artifact pdca-wf writes. Fill the `{slots}`; do not invent/remove sections. (Workflow JSON returns are templated separately in `schemas.md`.)
 
-## Plan — `02-planned/<dt>-<feature>-plan.md` (Phase 2)
+## Plan — `02-planned/<dt>-<feature>-plan.md` (plan phase)
 
 ```markdown
 # {feature} — Plan
 
 > Status: ACTIVE-PLAN
+
+## Sprint Brief
+- Problem: {…}
+- Success: {…}
+- Out of scope: {…}
+- Dependencies: {…}
+- Pre-mortem: {…}
 
 ## Goal (one line)
 {what & why}
@@ -24,9 +31,14 @@ Fixed skeletons for every md artifact pdca-wf writes. Fill the `{slots}`; do not
 | Risk | Mitigation |
 |---|---|
 | {…} | {…} |
+
+## Plan review (plan-review phase result — filled after the panel returns)
+- Lenses run: {…}
+- Verdict: GO / FIX-FIRST
+- Findings kept/waived: {finding → kept (fixed how) or waived (why)}
 ```
 
-## Design — `02-planned/<dt>-<feature>-design.md` (Phase 3, single input to Do)
+## Design — `02-planned/<dt>-<feature>-design.md` (design phase, single input to Do)
 
 ```markdown
 # {feature} — Design
@@ -52,9 +64,14 @@ Fixed skeletons for every md artifact pdca-wf writes. Fill the `{slots}`; do not
 
 ## Open items (only if any — items that must be locked before implementation)
 - {…}
+
+## Design review (design-review phase result — filled after the panel returns)
+- Lenses run: {…}
+- Verdict: GO / FIX-FIRST
+- Findings kept/waived: {finding → kept (fixed how) or waived (why)}
 ```
 
-## Check snapshot — `05-reports/<dt2>-<feature>-check.md` (Phase 5)
+## Check snapshot — `05-reports/<dt2>-<feature>-check.md` (targeted-test / gap-check phases)
 
 ```markdown
 # {feature} — Check {dt2}
@@ -67,7 +84,7 @@ Final: matchRate {n}% / iterations {n}/5
 Residual gaps (only if max 5 exhausted): {gap + severity, "none" if none}
 ```
 
-## Report — `05-reports/<dt3>-<feature>-report.md` (Phase 6)
+## Report — `05-reports/<dt3>-<feature>-report.md` (report phase)
 
 ```markdown
 # {feature} — Report {dt3}
@@ -92,7 +109,7 @@ iterations: {n} / testsRun: {n} / matchRate: {n}%
 - **Q. {…}?** — {answer}
 ```
 
-## 01-built section (Phase 6 merge — section-scoped, never whole-file)
+## 01-built section (report phase merge — section-scoped, never whole-file)
 
 ```markdown
 ## {feature}  <!-- Last updated: {YYYY-MM-DD HH:MM} -->

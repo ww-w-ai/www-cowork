@@ -46,10 +46,29 @@ External actions remain approval-gated regardless of score.
 |---|---|---|---|
 | S1 | Shared method contract, minimal state schema, risk score, host seams | none | Shared contract and deterministic state validation pass |
 | S2 | Dual-host `pdca-wf` | S1 | Same phases, gates, WorkList, and outputs on both hosts |
-| S3 | Dual-host `cowork-sprint` | S1, S2 | Rolling roadmap, role deltas, risk gates, targeted tests, commits, resume |
+| S3 | Dual-host `cowork-sprint` | S1, S2 | Rolling roadmap, dependency-based sequential/parallel/mixed clusters, role deltas, risk gates, targeted tests, commits, resume |
 | S4 | Remaining skills, agents, manifests, transcript boundary, packaging | S1–S3 | Six-skill parity, both manifests valid, tests and install smoke pass; Codex goal-control messages excluded from user-message views |
 
 Only the active sprint receives detailed Plan and Design. Later sprints remain coarse until their dependencies settle.
+
+### S3 execution-cluster addition
+
+Roadmap planning classifies sprint relationships before execution:
+
+```text
+explicit or implicit dependency
+  -> sequential
+
+shared file, shared mutable artifact, shared public contract, or overlapping ownership
+  -> sequential unless the Plan defines a deterministic merge owner
+
+no dependency and no ownership overlap
+  -> parallel-eligible
+```
+
+Store the resulting roadmap mode as `sequential`, `concurrent`, or `mixed`. In mixed mode, independent sprints run as a bounded parallel cluster and the next dependent cluster waits for every prerequisite commit and checkpoint. Both hosts expose the same cluster plan and completion semantics; only their dispatch mechanisms differ.
+
+S3 acceptance must cover a pure sequential graph, a parallel diamond, mixed clusters, dependency failure blocking downstream work, file-ownership collision forcing serialization, and deterministic integration after a parallel cluster.
 
 ### S4 transcript acceptance addition
 
@@ -260,3 +279,170 @@ Each sprint stores `risk: {impact, recovery, securityExternal, contract, verific
 | S1-06 | Existing TRIM preservation | Original intent retained as a concise QA diff check; default flow has no mandatory separate trim agent | P1 |
 | S1-07 | Host seam parity | Shared text contains no host tools; host references cannot redefine phases/gates | P0 |
 | S1-08 | Entrypoint consumption | Current public skills link to shared method/runtime references without implementing S2/S3 orchestration | P1 |
+
+## S2 Sprint Brief
+
+### Problem
+
+`pdca-wf` currently defines the product as a Claude Workflow engine. Codex has no Workflow or TodoWrite primitive, but it can implement the same single-feature lifecycle with `update_plan`, explorer/worker collaboration agents, and root-owned judgment.
+
+### Success
+
+- One `skills/pdca-wf/SKILL.md` exposes the same trigger, phases, gates, WorkList, outputs, and Done rules to both hosts.
+- Existing Claude Workflow behavior moves intact to a Claude execution reference.
+- Codex receives an explicit root/worker execution reference.
+- The entrypoint selects by available host capabilities, not by user configuration.
+- Contract tests prove both mappings cover every shared phase and core gate.
+
+### Out of scope
+
+- Multi-sprint orchestration, worktree lifecycle, and roadmap state transitions owned by `cowork-sprint`.
+- Codex manifest and transcript normalization.
+- Rewriting Claude Workflow scripts.
+
+### Dependencies
+
+- S1 shared method and runtime mappings.
+- Existing `pdca-wf` Workflow implementation and schemas.
+
+### Pre-mortem
+
+- The entrypoint contains both full implementations and doubles its context cost.
+- Moving Claude instructions changes behavior or breaks relative references.
+- Codex creates Goals for ordinary feature work without explicit authorization.
+- Platform mappings drift in phase names or artifacts.
+
+## S2 Plan
+
+1. Characterize the current Claude `pdca-wf` surface and relative references.
+2. Move Claude-only runtime mechanics to a Claude execution reference. Preserve Workflow scripts, schemas, same-file serialization, bounded Check/Act, and document lifecycle mechanics. Intentionally change lifecycle ordering to add Sprint Brief, pre-Design Plan review, and post-Design Design review.
+3. Write a Codex execution reference that maps the same lifecycle to root, `update_plan`, explorer, worker, and fresh reviewers.
+4. Replace the public entrypoint with concise shared routing, trigger boundaries, common inputs/outputs, and host selection.
+5. Extend parity tests to require every shared phase, core gate, output, and safety boundary in both runtime mappings.
+6. Run only pdca contract, moved-reference, path, frontmatter, and existing Bun regression tests.
+7. Commit S2 independently and checkpoint state.
+
+### Entry modes and commit ownership
+
+| Entry mode | Planning | Commit owner | Durable checkpoint |
+|---|---|---|---|
+| standalone interactive `pdca-wf` | full feature lifecycle | no implicit commit; commit only when the user requested it | report/as-built output; no cowork sprint state required |
+| pre-planned standalone | validate supplied Brief/Plan/Design/WorkList, then execute | no implicit commit; return commit-ready evidence | report/as-built output |
+| invoked by `cowork-sprint` | planning artifacts already reviewed; execution starts at Do | cowork-sprint leader must commit the sprint | cowork-sprint leader updates shared state after commit |
+
+The execution-only return contract is `{artifacts, targetedTests, gapResult, qaDiff, done, commitReady}`. `cowork-sprint` consumes it and performs its mandatory commit and state checkpoint. Standalone execution reports the same evidence but does not infer authorization to commit.
+
+### Intentional lifecycle delta
+
+| Current Claude behavior | S2 target | Classification |
+|---|---|---|
+| Research -> Plan -> Design -> one review | Research -> Brief -> Plan -> Plan review -> Design -> Design review | intentional shared-method correction |
+| Workflow Research/Do/Check | same Workflow mechanics | preserved |
+| WorkList topo-sort, file groups, same-file serialization | same | preserved |
+| bounded Check/Act and document lifecycle | same, ordered under shared gates | preserved |
+| no standalone commit | still no implicit standalone commit | preserved safety boundary |
+| cowork caller commits outside pdca | explicit execution-only handoff to leader | clarified |
+
+## S2 Plan review contract
+
+- Scope: only one-feature execution; no sprint orchestration leaks in.
+- Completeness: CC behavior remains reachable and Codex has an executable path.
+- Sequencing: S3 can invoke this stable contract without host-specific branching.
+- Done: parity checks verify behavior, not only links or headings.
+
+## S2 Design
+
+### Public entrypoint
+
+`skills/pdca-wf/SKILL.md` becomes a thin host router. It retains the shared name and discriminating description. It reads `../shared/references/cowork-method.md`, then selects:
+
+```text
+if update_plan and collaboration tools are available, and Workflow/TodoWrite are not
+  read references/runtime-codex.md
+else if Workflow and TodoWrite are available, and update_plan is not
+  read references/runtime-claude-code.md
+else if both capability sets are visible
+  stop: ambiguous host capability surface
+else
+  stop with an unsupported-host explanation
+```
+
+Host detection uses available capabilities. It never asks the user to select the host.
+
+### Claude execution reference
+
+Move the existing Workflow constraints, actor model, execution mechanics, OODA, gates, and document lifecycle into `skills/pdca-wf/references/runtime-claude-code.md`. Preserve the runtime mechanics while adopting the intentional lifecycle delta above. Do not rewrite `workflow-scripts.md` or schemas.
+
+Rewrite moved links mechanically:
+
+```text
+references/<file> -> <file>
+skills/pdca-wf/docs/01-built/pdca-wf.md -> ../docs/01-built/pdca-wf.md
+```
+
+A link-resolution test must verify every local Markdown target from the entrypoint and moved reference.
+
+### Codex execution reference
+
+The root agent owns Research integration, Sprint Brief, Plan, Design, review resolution, integration, tests, gap check, QA diff question, report, and safety decisions. It uses:
+
+- `update_plan` for current phases;
+- explorers for bounded codebase research;
+- workers for explicitly owned implementation slices;
+- fresh-context agents for separate Plan and Design reviews;
+- root-executed targeted commands for exit-code evidence.
+
+The Codex reference contains a phase table with inputs, owner/tool, output, exit condition, and fallback. WorkList items are topologically sorted. Disjoint file groups may go to workers; same-file changes remain serial. Check/Act is bounded at five iterations. OODA re-plans only the affected slice and re-runs only invalidated review lenses.
+
+Fresh reviews use collaboration agents with no inherited task rationale beyond the raw Brief/Plan or Design and governing paths. If no independent slot is available, wait for one or stop with `INDEPENDENT_REVIEW_UNAVAILABLE`; the root may implement directly but may not replace mandatory independent review with self-review. Worker failure returns ownership to root for bounded direct execution and does not skip the exit gate.
+
+An ordinary `pdca-wf` run does not create a Codex Goal. It participates in an existing Goal when its caller already has one. It creates a Goal only when the user explicitly requests one.
+
+### Shared observable contract
+
+Both hosts produce the same artifacts: research note when needed, Sprint Brief, Plan, Plan review result, Design with WorkList, Design review result, targeted test evidence, gap result, QA diff decision, report, and as-built update. Both use the same risk score and safety approval rule. Execution-only mode returns the fixed handoff object defined above.
+
+Parity validation uses a canonical matrix, not prose headings. It asserts interactive and execution-only ordering, separate review barriers, blocker-only re-review, WorkList grouping, five-iteration bound, targeted test before gap check, QA diff after gap check, output/return fields, risk thresholds, external approval, unsupported/ambiguous hosts, and absence of implicit Goal creation.
+
+## S2 Design review contract
+
+- Claude procedure relocation is behavior-preserving and all links resolve.
+- Codex mapping can execute every shared phase without invented tools.
+- Entry routing is deterministic from capabilities.
+- Common artifacts and Done rules appear once and are tested for both hosts.
+- No ordinary feature run creates a Goal implicitly.
+
+## S2 WorkList
+
+| ID | Work | Acceptance evidence | Priority |
+|---|---|---|---|
+| S2-01 | Thin shared entrypoint | Trigger boundaries remain; entrypoint routes by capabilities | P0 |
+| S2-02 | Claude procedure extraction | Existing phase/reference inventory preserved and links resolve | P0 |
+| S2-03 | Codex execution mapping | Every shared phase has a concrete Codex owner and mechanism | P0 |
+| S2-04 | Common outputs and Done | Parity test covers artifacts, core gates, risk, safety, and sprint commit handoff | P0 |
+| S2-05 | Goal boundary | Test/contract proves no implicit Goal for ordinary feature work | P1 |
+| S2-06 | Entry modes and commit ownership | Behavioral matrix covers interactive, pre-planned, and cowork execution-only return/commit/checkpoint rules | P0 |
+| S2-07 | Targeted regression | Contract tests, moved-link resolution, host selection matrix, frontmatter, and Bun tests pass | P0 |
+| S2-08 | Supporting lifecycle artifacts | Review lenses/schema, templates, and as-built use the named dual-review lifecycle; parity test prevents drift | P0 |
+
+## Continuation execution policy — user decision, 2026-08-25
+
+Starting with the next Codex session, work that would normally be delegated to a Codex subagent should instead be delegated to the authenticated Claude CLI using Sonnet. Run Claude outside the sandbox when required for its existing Claude Max login and session environment. Use JSON streaming so the Codex leader can observe the live event stream.
+
+Recommended invocation shape:
+
+```text
+claude -p --model sonnet --output-format stream-json --include-partial-messages --dangerously-skip-permissions <prompt>
+```
+
+The user explicitly approved sending the relevant private repository plan/source context to the external Claude service and allowing Sonnet to edit the files assigned to its owned slice. The command still requires the normal escalated sandbox approval at execution time.
+
+`--dangerously-skip-permissions` removes Claude's internal prompts; it does not widen task scope. Every invocation must state an exact writable file allowlist, an exact focused-test command, and explicit forbidden files. The Codex leader compares the resulting diff with that allowlist and rejects out-of-scope edits. Planning documents, durable state, and sibling slices remain read-only unless the invocation explicitly assigns them.
+
+Claude output is evidence or an owned implementation slice, not final acceptance. The Codex leader must inspect every diff. Claude tends to write verbose code and documentation, so the leader must ask for a more compact revision when the same contract can be implemented with less text or structure. Do not compact away contracts, safety boundaries, failure direction, or required evidence.
+
+Observed environment facts:
+
+- sandbox: `loggedIn: false`, `authMethod: none`;
+- outside sandbox: `loggedIn: true`, Claude Max authentication works;
+- sandbox creation under `~/.claude/session-env/` failed with `EPERM`.
